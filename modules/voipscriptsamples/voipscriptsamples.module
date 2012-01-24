@@ -1,0 +1,458 @@
+<?php
+/**
+ * @file Provides sample scripts that demonstrate the capabilities of the VoIP Drupal platform
+ */ 
+
+foreach (array('voipscriptsamples_weather.inc', 'voipscriptsamples_sms_group.inc') as $file) {
+  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
+}
+
+/**
+ * Implementation of hook_voipscript_load_script()
+ */
+function voipscriptsamples_voipscript_load_script($script_name, $params=NULL) {
+  $script = _voipscriptsamples_load_sample_scripts($script_name);
+  return $script;
+}
+
+/**
+ * Implementation of hook_voipscript_get_script_names()
+ */
+function voipscriptsamples_voipscript_get_script_names() {
+  $script_names[] = 'voipscript_dial_test';
+  $script_names[] = 'voipscript_gosub_test_a';
+  $script_names[] = 'voipscript_gosub_test_b';
+  $script_names[] = 'voipscript_join_conference';
+  $script_names[] = 'voipscript_main_menu';
+  $script_names[] = 'voipscript_record';
+  $script_names[] = 'voipscript_say_demo';
+  $script_names[] = 'voipscript_send_sms';
+  $script_names[] = 'voipscript_small_office_ivr';
+  $script_names[] = 'voipscript_sms_call_sender';
+  $script_names[] = 'voipscript_sms_dialog';
+  $script_names[] = 'voipscript_sms_group';
+  $script_names[] = 'voipscript_voice_with_sms_input';
+  $script_names[] = 'voipscript_weather_report';
+  return $script_names;
+}
+
+
+
+/*
+ * Sample scripts that highlight VoIP Drupal capabilities
+ */
+function _voipscriptsamples_load_sample_scripts($script_name) {
+  if($script_name == 'voipscript_dial_test') {
+    $script = _voipscriptsamples_get_dial_test_script();
+  }
+
+  if($script_name == 'voipscript_gosub_test_a') {
+    $script = new VoipScript('voipscript_gosub_test_a');
+    $script->addSay(t('script a'));
+    $script->addGosub('voipscript_gosub_test_b');
+    $script->addSay(t('back in script a'));
+    $script->addSay(t('bye bye'));
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_gosub_test_b') {
+    $script = new VoipScript('voipscript_gosub_test_b');
+    $script->addSay(t('script b'));
+    $script->addReturn();
+  }
+
+  if($script_name == 'voipscript_join_conference') {
+    $script = _voipscriptsamples_get_join_conference_script();
+  }
+
+  if($script_name == 'voipscript_main_menu') {
+    $script = new VoipScript('voipscript_main_menu');
+    $script->addSay(t('Welcome to the Voip Drupal Hotline.'));
+
+    $script->addLabel('main_menu');
+    $options_menu = t('Main menu. To join or create a conference call, press 1. To hear the weather report for your area, press 2. To send a test SMS, press 3. To record a message, press 4. To hang up, press the pound key.');
+    $input_options = array(
+      '1' => 'conference',
+      '2' => 'weather report',
+      '3' => 'sms',
+      '4' => 'record',
+      '#' => 'hang up',
+      'i' => 'hang up',
+      't' => 'hang up'
+    );
+    $invalid_msg = t('Invalid option selected.');
+    $script->addRunIvrMenu($options_menu, $input_options, $invalid_msg);
+    $script->addGoto('%ivr_option_selected');
+    
+    $script->addLabel('conference');
+    $script->addGosub('voipscript_join_conference');
+    $script->addGoto('hang up');
+    
+    $script->addLabel('weather report');
+    $script->addGosub('voipscript_weather_report');
+    $script->addGoto('hang up');
+
+    $script->addLabel('sms');
+    $script->addGosub('voipscript_send_sms');
+    $script->addGoto('hang up');
+
+    $script->addLabel('record');
+    $script->addGosub('voipscript_record');
+    $script->addGoto('hang up');
+
+    $script->addLabel('hang up');
+    $script->addSay(t('Thanks for using the Voip Drupal Hotline. Goodbye.'));
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_record') {
+    $script = _voipscriptsamples_get_record_script();
+  }
+
+  if($script_name == 'voipscript_say_demo') {
+    $script = new VoipScript('voipscript_say_demo');
+    $p1 = new VoipPrompt(t('Reading string as number: 12345'), 'man');
+    $say = array($p1);
+    $script->addSay($say);
+    $p2 = new VoipPrompt(t('Reading string as digits: 12345'), 'woman', 'digits');
+    $say = array($p2);
+    $script->addSay($say);
+
+    $script->addSay(t('Reading string as date.'));
+    $p3 = new VoipPrompt(VoipVoice::getDate('1.1.2012'));
+    $say = array($p3);
+    $script->addSay($say);
+    
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_send_sms') {
+    $script = _voipscriptsamples_get_send_sms();
+  } 
+
+  if($script_name == 'voipscript_small_office_ivr') {
+    $script = new VoipScript('voipscript_small_office_ivr');
+    
+    $script->addSay(t('Welcome to our office hot line. '));
+    
+    $script->addLabel('office_menu');
+    $options_menu = t('For sales, dial 1. For customer support, dial 2. For hours of operation, dial 3. To hang up, dial the star key. ');
+    $input_options = array(
+      '1' => 'sales',
+      '2' => 'customer support',
+      '3' => 'hours',
+      '*' => 'hang up',
+      'i' => 'hang up',
+      't' => 'hang up'
+    );
+    $invalid_msg = t('Invalid option selected.');
+    $script->addRunIvrMenu($options_menu, $input_options, $invalid_msg);
+    $script->addGoto('%ivr_option_selected');
+    
+    $script->addLabel('sales');
+    $script->addSay('Sales department');
+    $script->addGoto('hang up');
+    
+    $script->addLabel('customer support');
+    $script->addSay(t('Customer support department'));
+    $script->addGoto('hang up');
+    
+    $script->addLabel('hours');
+    $script->addSay(t('Our office is open Monday to Friday from 9am to 5pm.'));
+    $script->addGoto('office_menu');
+    
+    $script->addLabel('hang up');
+    $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_sms_call_sender') {
+    $script = new VoipScript('voipscript_sms_call_sender');
+    $script->addSendText(t('We are calling you.'));
+    $script->addDial();
+    $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_sms_dialog') {
+    $script = new VoipScript('voipscript_sms_dialog');
+    $script->addSet('msg', '^strtolower(%inbound_text_contents)');
+    $script->addGotoIf('hi received', "^%msg == 'hi'");
+    $script->addGotoIf('end', "^%inbound_text_contents == ''");
+    
+    $script->addSendText("nice meeting you, %inbound_text_contents");
+    $script->addGoto('end');
+    
+    $script->addLabel('hi received');
+    $script->addSendText(t('hi, what is your name?'));
+   
+    $script->addLabel('end');
+    $script->addHangup('reset');
+  }
+
+  if($script_name == 'voipscript_sms_group') {
+    $script = _voipscriptsamples_sms_group();
+  }
+
+  if($script_name == 'voipscript_voice_with_sms_input') {
+    $script = new VoipScript('voipscript_voice_with_sms_input');
+    $script->addSay(t('Please send us a SMS with your address.'));
+    $script->addSet('text_handler','voipscriptsamples_text_handler_demo');
+    $script->addGoto('waitcmd');
+    
+    $script->addLabel('wait');
+    $script->addSay(t('No message received. Try again.'));
+
+    $script->addLabel('waitcmd');
+    $script->addWait(20);
+    $script->addGotoIf('wait', "^%user_address == ''");
+    $script->addSay(t('You address is %user_address.'));
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_weather_report') {
+    $script = _voipscriptsamples_get_weather_report();
+  }
+  
+  return $script;
+}
+
+
+/**
+ * Sample script that shows how to redirect a call to a different number
+ */
+function _voipscriptsamples_get_dial_test_script() {
+  $script = new VoipScript('voipscript_dial_test');
+
+  $script->addLabel('start');
+  $prompt = t("Please type in the 10 digit phone number you would like to call.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 10;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('no input received', "^%input_digits == ''");
+
+  $args = array('@digits' => '%input_digits');
+  $text = t('You typed @digits. ', $args);
+  $prompt  = new VoipPrompt($text, NULL, 'digits');
+  $script->addSay($prompt);
+  $script->addSet('dial_number','%input_digits');
+
+  $script->addLabel('accept menu');
+  $prompt = t("To accept this number, press 1.  To type it once again, press 2. To hangup, press the pound key.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 1;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('dial', "^%input_digits == '1'");
+
+  $script->addGotoIf('start', "^%input_digits == '2'");
+
+  $script->addGotoIf('end call', "^%input_digits == '#'");
+
+  $script->addSay(t('Invalid input received. Please try again.'));
+  $script->addGoto('accept menu');
+
+  $script->addLabel('dial');
+  $script->addSay(t('Dialing...')); 
+  $script->addDial('%dial_number');
+  $args = array('@status' => '%dial_status');
+  $script->addSay(t('The dial command returned: @status', $args));
+  $script->addGoto('start');
+
+  $script->addLabel('no input received');
+  $script->addSay(t('No input received. Please try again.'));
+  $script->addGoto('start');
+
+  $script->addLabel('end call');
+  $script->addSay(t('Bye bye'));
+  $script->addHangup();
+
+  return $script;
+}
+
+/**
+ * Sample script that shows how to organize conference calls
+ */
+function _voipscriptsamples_get_join_conference_script() {
+  $script = new VoipScript('voipscript_join_conference');
+
+  $script->addLabel('start');
+  $prompt = t("Please type in the 3 digit number of the conference room you would like to join.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 3;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('no input received', "^%input_digits == ''");
+
+  $args = array('@digits' => '%input_digits');
+  $script->addSay(t('You typed @digits. ', $args));
+  $script->addSet('room_number','%input_digits');
+
+  $script->addLabel('accept menu');
+  $prompt = t("To accept this number, press 1.  To type it once again, press 2. To hangup, press the pound key.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 1;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('join', "^%input_digits == '1'");
+
+  $script->addGotoIf('start', "^%input_digits == '2'");
+
+  $script->addGotoIf('end call', "^%input_digits == '#'");
+
+  $script->addSay(t('Invalid input received. Please try again.'));
+  $script->addGoto('accept menu');
+
+  $script->addLabel('join');
+  $args = array('@number' => '%room_number');
+  $script->addSay(t('Joining conference room @number', $args));
+  $script->addJoinConference('%room_number');
+  $args = array('@status' => '%dial_status');
+  $script->addSay(t('The "join conference" command returned: @status', $args));
+  $script->addGoto('start');
+
+  $script->addLabel('no input received');
+  $script->addSay(t('No input received. Please try again.'));
+  $script->addGoto('start');
+
+  $script->addLabel('end call');
+  $script->addSay(t('Bye bye'));
+  $script->addHangup();
+
+  return $script;
+}
+
+
+
+/**
+ * Sample script that shows how to record audio from the phone and process the resulting file
+ */
+function _voipscriptsamples_get_record_script() {
+  $script = new VoipScript('voipscript_record');
+
+  $script->addLabel('start');
+  $prompt = t("Please record your message after the beep.  When done, press the pound key.");
+  $timeout = 5;
+  $end_key = '#';
+  $max_length = 20;
+  $script->addRecord($prompt, $timeout, $end_key, $max_length);
+
+  $args = array('@message' => '%recording_public_url');
+  $script->addSay(t('You said @message', $args));
+
+  $script->addLabel('accept menu');
+  $prompt = t("To accept this recording, press 1.  To record it once again, press 2. To hangup, press the pound key.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 1;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('accept recording', "^%input_digits == '1'");
+
+  $script->addGotoIf('start', "^%input_digits == '2'");
+
+  $script->addGotoIf('end call', "^%input_digits == '#'");
+
+  $script->addSay(t('Invalid input received. Please try again.'));
+  $script->addGoto('accept menu');
+
+  $script->addLabel('accept recording');
+  $script->addSay(t('About to start processing the recorded file.'));
+  $script->addSet('callback_result',
+    '^_voipscriptsamples_record_callback(%call_id, %recording_public_url, %recording_duration)');
+  $args = array('@result' => '%callback_result');
+  $script->addSay(t('The callback returned: @result', $args));
+  $script->addGoto('end call');
+
+  $script->addLabel('no input received');
+  $script->addSay(t("No input received. Please try again."));
+  $script->addGoto('start');
+
+  $script->addLabel('end call');
+  $script->addSay(t('Bye bye.'));
+  $script->addHangup();
+
+  return $script;
+}
+
+/**
+ * Callback function associated with the script voipscript_record.  It is called
+ * whenever that script records a new entry from the user.
+ */
+function _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration=NULL) {
+watchdog('voipscriptsamples', "in _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration)");
+
+  return 'Success';
+}
+
+
+/**
+ * Sample script that shows how to send sms messages from inside a call
+ */
+function _voipscriptsamples_get_send_sms() {
+  $script = new VoipScript('voipscript_send_sms');
+
+  $script->addLabel('start');
+  $prompt = t("Please type in the 10 digit phone number you would like to send a text message to.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 10;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('no input received', "^%input_digits == ''");
+
+  $args = array('@digits' => '%input_digits');
+  $text = t('You typed @digits.', $args);
+  $prompt  = new VoipPrompt($text, NULL, 'digits');
+  $script->addSay($prompt);
+  $script->addSet('sms_number','%input_digits');
+
+  $script->addLabel('accept menu');
+  $prompt = t("To accept this number, press 1.  To type it once again, press 2. To hangup, press the pound key.");
+  $timeout = 5;
+  $end_key = '';
+  $num_digits = 1;
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
+
+  $script->addGotoIf('accept number', "^%input_digits == '1'");
+
+  $script->addGotoIf('start', "^%input_digits == '2'");
+
+  $script->addGotoIf('end call', "^%input_digits == '#'");
+
+  $script->addSay(t('Invalid input received. Please try again.'));
+  $script->addGoto('accept menu');
+
+  $script->addLabel('accept number');
+  $script->addSay(t('About to send text message'));
+  $text = 'Hello from the VoIP Drupal platform';
+  $script->addSendText($text, '%sms_number');
+  $args = array('@result' => '%send_text_status');
+  $script->addSay(t('The SMS command returned: @result', $args));
+  $script->addGoto('end call');
+
+  $script->addLabel('no input received');
+  $script->addSay(t("No input received. Please try again."));
+  $script->addGoto('start');
+
+  $script->addLabel('end call');
+  $script->addSay(t('Bye bye.'));
+  $script->addHangup();
+
+  return $script;
+}
+
+function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_number, &$call, $network) {
+  watchdog('voipscriptsamples', "In voipscriptsamples_text_handler_demo with $message, $caller_number, $dest_number, $network");
+  
+  //When done with processing, set "text_handler_executed" variable to TRUE.
+  $script = $call->getScript();
+  $script->setVar('user_address', '%inbound_text_contents');
+  $call->setScript($script);
+  $call->save();
+}

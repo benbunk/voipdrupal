@@ -1,0 +1,31 @@
+<?php
+/**
+ * Implementation of hook_requirements().
+ */
+function voiptropo_requirements($phase) {
+  $requirements = array();
+  $t = get_t(); 
+
+  if ($phase == 'runtime' || $phase == 'install') {
+    if (!extension_loaded("curl")) {
+      $requirements['tropo_curl'] = array(
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t("The VoIP Tropo module requires the PHP Curl extension to be installed."),
+      );
+    }
+    else {
+      $requirements['tropo_curl'] = array(
+        'value' => $t('PHP Curl is installed.'),
+        'severity' => REQUIREMENT_OK,
+      );
+    }
+  }
+  $requirements['tropo_curl']['title'] = $t('VoIP Tropo');
+  return $requirements;
+}
+
+function voiptropo_uninstall() {
+ /*We have to implement hook_uninstall or hook_requirements will not get called during install
+   http://www.silex-consulting.com/2011/05/04/views-3-dependency-in-drupal-6/
+ */
+}

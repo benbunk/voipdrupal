@@ -1,0 +1,235 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Enables communication between Drupal and VoIP servers.
+ */
+
+foreach (array('voip_error.inc', 'voipserver.inc', 'voiplogserver.inc') as $file) {
+  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
+}
+
+
+
+/**
+ * Make a phone call
+ *
+ * @param object $voipcall with the information about the call to be made
+ *
+ * @return boolean with TRUE in case of success or FALSE otherwise
+ */
+function voip_dial($voipcall) {
+  // make sure the user is allowed to make outbound calls
+  $allowed = user_access('make outbound calls');
+  if(!$allowed) {
+    global $user;
+    $variables['%uid'] = $user->uid;
+    $msg = 'User %uid does not have permissions to make outbound calls.';
+    watchdog('voip', $msg, $variables, WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  $voip_server = voip_default_server();
+  $response = $voip_server->dial($voipcall);
+
+  if (voip_error()) {
+    $error_message = 'Failure executing voip_dial() with %options.';
+    $variables['%options'] = print_r($voipcall, TRUE);
+    if (voip_error_message()) {
+      $error_message .= ' The server said: '. voip_error_message();
+    }
+    watchdog('voip', $error_message, $variables, WATCHDOG_ERROR);
+  }
+
+  return $response;
+}
+
+/**
+ * Send a text message
+ *
+ * @param string $text with the body of the text
+ * @param object $voipcall with the information about the text to be made
+ * @param boolean $reply optional parameter indicating if this is a reply message
+ *
+ * @return boolean with TRUE in case of success or FALSE otherwise
+ */
+function voip_text($text, $voipcall, $reply = FALSE) {
+//TODO: Convert to text perm.
+  //  make sure the user is allowed to make outbound calls
+  $allowed = user_access('make outbound calls');
+  if(!$allowed) {
+    global $user;
+    $variables['%uid'] = $user->uid;
+    $msg = 'User %uid does not have permissions to make outbound calls.';
+    watchdog('voip', $msg, $variables, WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  $voip_server = voip_default_server();
+  $response = $voip_server->send_text($text, $voipcall, $reply);
+
+  if (voip_error()) {
+    $error_message = 'Failure executing voip_text() with %options.';
+    $variables['%options'] = print_r($voipcall, TRUE);
+    if (voip_error_message()) {
+      $error_message .= ' The server said: '. voip_error_message();
+    }
+    watchdog('voip', $error_message, $variables, WATCHDOG_ERROR);
+  }
+
+  return $response;
+}
+
+
+/**
+ * Hangup a phone call
+ *
+ * @param object $voipcall with the information about the call to be hangup
+ *
+ * @return boolean with TRUE in case of success or FALSE otherwise
+ */
+function voip_hangup($voipcall) {
+  // make sure the user is allowed to hangup the call
+  global $user;
+  $allowed = user_access('hangup any calls')
+         || (($user->uid == $voipcall->getUid()) && user_access('hangup own calls'));
+  if(!$allowed) {
+    $variables['%uid'] = $user->uid;
+    $msg = 'User %uid does not have permissions to hangup calls.';
+    watchdog('voip', $msg, $variables, WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  $voip_server = voip_default_server();
+  $response = $voip_server->hangup($voipcall);
+
+  if (voip_error()) {
+    $error_message = 'Failure executing voip_hangup() with %options.';
+    $variables['%options'] = print_r($voipcall, TRUE);
+    if (voip_error_message()) {
+      $error_message .= ' The server said: '. voip_error_message();
+    }
+    watchdog('voip', $error_message, $variables, WATCHDOG_ERROR);
+  }
+
+  return $response;
+}
+
+/**
+ * Common entry-point function for text handling.
+ *
+ * @param text_content with the text body
+ *
+ * @return 
+ */
+function voip_text_handler($text_content, $origin ,$destination, $time, $network='sms', $server_name='') {
+ 
+  $voip_server = voip_default_server();
+  $response = $voip_server->text_handler($text_content, $origin ,$destination, $time, $network, $server_name);
+
+  if (voip_error()) {
+    $error_message = 'Failure executing voip_text_handler() with %options.';
+    $variables['%options'] = "$text_content, $origin ,$destination, $time, $network, $server_name";
+    if (voip_error_message()) {
+      $error_message .= ' The server said: '. voip_error_message();
+    }
+    watchdog('voip', $error_message, $variables, WATCHDOG_ERROR);
+  }
+
+  return $response;
+}
+
+
+/**
+ * Implementation of hook_sms_incoming().
+ */
+function voip_sms_incoming($op, $number, $message, $options) {
+  if ($op == 'process') {
+    $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
+    watchdog('voipcall', $msg);
+    voip_text_handler($message, $number ,'', time());
+  }
+}
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function voip_menu() {
+  $items = array();
+
+  $items['admin/voip'] = array(
+    'title' => 'VoIP Drupal',
+    'description' => 'Control how your site interacts with VoIP servers.',
+    'position' => 'right',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer voip drupal framework'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system')
+  );
+
+  $items['admin/voip/servers'] = array(
+    'title' => 'VoIP server configuration',
+    'description' => 'Configure VoIP servers and choose the default server.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('voip_admin_default_form', NULL),
+    'access arguments' => array('administer voip drupal framework'),
+    'file' => 'voip.admin.inc',
+  );
+
+  $items['admin/voip/servers/%'] = array(
+    'title callback' => 'voip_admin_server_title',
+    'title arguments' => array(3),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('voip_admin_server_form', 3),
+    'access arguments' => array('administer voip drupal framework'),
+    'type' => MENU_CALLBACK,
+    'file' => 'voip.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function voip_perm() {
+  return array('administer voip drupal framework', 'hangup any calls', 'hangup own calls', 'make outbound calls');
+}
+
+
+/**
+ * Implementation of hook_theme().
+ */
+function voip_theme() {
+  $items['voip_admin_default_form'] = 
+       array('arguments' => array('form' => NULL));
+
+  return $items;
+}
+
+
+/**
+ * Internal functions
+ */
+
+/**
+ * Voip server menu title callback.
+ */
+function voip_admin_server_title($server_id) {
+  $server = VoipServer::getServer($server_id);
+  return sprintf('%s server', $server->getName());
+}
+
+/**
+ * Returns the current default voip server.
+ */
+function voip_default_server() {
+  $server_id = variable_get('voip_default_server', 'log');
+  $server = VoipServer::getServer($server_id);
+  return $server;
+}
+
+
+

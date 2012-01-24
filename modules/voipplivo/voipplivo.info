@@ -1,0 +1,14 @@
+; $Id$
+name = "VoIP Plivo"
+description = "Allows the VoIP Drupal platform to work with the Plivo communications framework."
+package = VoIP Drupal
+dependencies[] = voip
+dependencies[] = voipcall
+core = 6.x
+
+; Information added by drupal.org packaging script on 2012-01-19
+version = "6.x-1.0-beta8"
+core = "6.x"
+project = "voipdrupal"
+datestamp = "1326947747"
+

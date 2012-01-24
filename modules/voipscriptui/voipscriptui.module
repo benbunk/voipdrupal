@@ -1,0 +1,339 @@
+<?php
+/**
+ * @file Provides an easier way for developers to test Voip Drupal scripts
+ */ 
+
+foreach (array('voipscriptui.features.inc') as $file) {
+  require_once($file);
+}
+
+/**
+ * Implementation of hook_voipscript_get_script_names()
+ */
+function voipscriptui_voipscript_get_script_names() {
+  $script_names = array();
+  $result = db_query('SELECT n.title FROM {node} n WHERE n.type = "voipscriptui" and n.status = 1');
+  while ($node = db_fetch_object($result)) {
+    $script_names[]=$node->title;
+  }
+  return $script_names;
+}
+
+
+/**
+ * Implementation of hook_voipscript_load_script()
+ */
+function voipscriptui_voipscript_load_script($script_name, $options=NULL) {
+  $script = NULL;
+  $param = array('type' => 'voipscriptui', 'title' => $script_name, 'status' => 1);
+  $script_node = node_load($param);
+  if($script_node) {
+    $script = new VoipScript($script_name);
+    $script_code = $script_node->field_voipscriptui_code[0]['value'];
+    ob_start();
+    if(eval("$script_code")===false) {
+      ob_end_clean();
+      $script = NULL;
+      watchdog('voipscriptui', 'PHP syntax error in script: @script', array('@script' => $script_code), WATCHDOG_ERROR);
+      return;
+    }
+    ob_end_clean();
+  }
+  return $script;
+}
+
+/**
+ * Implementation of hook_nodeapi()
+ */
+function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
+  if ($node->type == 'voipscriptui'  && $op == 'validate') {
+    //check for duplicate script names before saving a new script
+    if ($node->nid) {
+      $where = "AND nid!=".$node->nid;
+    }
+    $exist = db_result(db_query("SELECT nid FROM {node} WHERE type='voipscriptui' AND title='%s' $where LIMIT 1", $node->title));
+    if ($exist) {
+      form_set_error('field_voipscriptui_code',
+        t('A script called @script_name already exists. To edit it, click <a target="_blank" href="'.base_path().'node/'.$exist.'/edit">here</a>',
+          array('@script_name' => $node->title)));
+    }
+    $script_code = '$script = new VoipScript("'.$node->title.'");';
+    $script_code .= $node->field_voipscriptui_code[0]['value'];
+    
+    ob_start();
+    if(eval("$script_code")===false) {
+      ob_end_clean();
+      form_set_error('field_voipscriptui_code',
+        t('PHP syntax error in script: @script',
+          array('@script' => $script_code)));
+    }
+    ob_end_clean();
+  }
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function voipscriptui_menu() {
+  $items = array();
+  $items['voip/voipscripts'] = array(
+    'title' => 'VoIP Scripts',
+    'page callback' => 'voipscriptui_scripts_page',
+    'access callback' => '_voipscriptui_check_view_access',
+  );
+  
+  $items['voip/voipscripts/view/%'] = array(
+    'title callback' => 'voipscriptui_script_title',
+    'title arguments' => array(3),
+    'description' => 'View VoIP Script code',
+    'page callback' => 'voipscriptui_scripts_view_page',
+    'page arguments' => array(3),
+    'access callback' => '_voipscriptui_check_view_access',
+  );
+  
+  return $items;
+}
+
+function _voipscriptui_check_view_access() {
+  $has_access = user_access('view all voipscripts') || user_access('view ui voipscripts');
+  return $has_access;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function voipscriptui_form_alter(&$form, &$form_state, $form_id){
+  if($form_id=="voipscriptui_node_form") {
+    if (isset($_GET['clone_voipscript'])) {
+      if(isset($_GET['type']) && $_GET['type'] == 'node') {
+        $nid = $_GET['clone_voipscript'];
+        $code = db_result(db_query("SELECT field_voipscriptui_code_value FROM {content_type_voipscriptui} WHERE nid=%d", $nid));
+      }
+      else {
+        $script_name = $_GET['clone_voipscript'];
+        $code = _voipscriptui_reverse_parser($script_name);
+        $code = str_replace("<br>", "\n", $code);  
+      }
+      $form['field_voipscriptui_code'][0]['#default_value']['value'] = trim($code);
+    }
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function voipscriptui_perm() {
+  return array('clone all voipscripts', 'clone ui voipscripts', 'view all voipscripts', 'view ui voipscripts');
+}
+
+function voipscriptui_script_title($script_name) {
+  return $script_name . ' Script';
+}
+
+function voipscriptui_scripts_page() {
+  $clone_all = user_access('clone all voipscripts');
+  $clone_ui = user_access('clone ui voipscripts');
+  $view_all = user_access('view all voipscripts');
+  $headers = array(
+    array('data' => t('Title'), 'field' => 'title'),
+    array('data' => t('Script Code'), 'field' => 'code'),
+    array('data' => t('Generated From'), 'field' => 'type'),
+  );
+  if ($clone_all || $clone_ui) {
+    $headers[] = array('data' => t('Clone script'), 'field' => 'clone');
+  }
+
+  // get voipscriptui scripts
+  $res = db_query("SELECT nid, title FROM {node} WHERE type='voipscriptui'");
+  while ($script_ui = db_fetch_array($res)) {
+    $row= array(
+      'title' => $script_ui['title'],
+      'code' => l('view','node/' . $script_ui['nid']),
+      'type' => 'VoIP Script UI',
+    );
+    
+    if ($clone_all || $clone_ui) {
+      $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_ui['nid'].'&type=node'));
+    }
+     $data[strtolower($script_ui['title'])] = $row;
+  }
+
+  // get non-voipscriptui scripts
+  if($view_all){
+    $scripts = VoipScript::getScriptNames();
+    foreach ($scripts as $script_name) {
+      if(! $data[strtolower($script_name)]){
+        $row= array(
+          'title' => $script_name,
+          'code' => l('view','voip/voipscripts/view/' . $script_name),
+          'type' => 'Module',
+        );
+    
+        if ($clone_all) {
+          $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_name));
+        }
+        $data[strtolower($script_name)] = $row;
+      }
+    }
+  }
+
+  ksort($data);
+  $output .= theme('table', $headers, $data);
+  $output .= theme('pager', NULL, 50, 0);
+  return $output;
+}
+
+function voipscriptui_scripts_view_page($script_name) {
+    $output = _voipscriptui_reverse_parser($script_name);
+    return $output;
+}
+
+function _voipscriptui_get_complex_param($param) {
+  if (is_array($param) || is_object($param)) {
+    return 'unserialize(urldecode(\''.urlencode(serialize($param)).'\'));<br>/* The above code in a more readable format:<br>'.print_r($param, TRUE).'<br>*/'; 
+  }
+  else {
+    return '"'.$param.'";';
+  }
+}
+
+function _voipscriptui_reverse_parser($script_name) {
+  $script = VoipScript::loadScript($script_name, $vars);
+  $cmd = $script->getNextCommand();
+  while($cmd) {
+    $cmd_id = $cmd->getId();
+  switch($cmd_id) {
+    case 'VoipCmdBeep';
+      $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
+      $output.= '$script->addBeep();<br>';
+    break;
+    case 'VoipCmdDial';
+      $number = $cmd->getParam('number');
+      $timeout = $cmd->getParam('timeout', 30);
+      $hangup_on_star =  $cmd->getParam('hangup_on_star', false);
+      $time_limit = $cmd->getParam('time_limit', 14400);
+      $caller_id = $cmd->getParam('caller_id', NULL); 
+      $output.= '$number = '.$number.';<br>$timeout = '.$timeout.'; <br>$hangup_on_star = "'.$hangup_on_star.'"; <br>$time_limit = '.$time_limit.'; <br>$caller_id = "'.$caller_id.'"; <br>';
+      $output.= '$script->addDial($number, $timeout, $hangup_on_star, $time_limit, $caller_id);<br>';      
+    break;
+    case 'VoipCmdGetInput':
+      $timeout = $cmd->getParam('timeout', 5); 
+      $end_key = $cmd->getParam('end_key'); 
+      $num_digits = $cmd->getParam('num_digits'); 
+      $prompt = $cmd->getParam('prompt'); 
+      $output.= '$timeout = '.$timeout.'; <br>$end_key = "'.$end_key.'"; <br>$num_digits = '.$num_digits.'; <br>$prompt = '._voipscriptui_get_complex_param($prompt).' <br>';
+      $output.= '$script->addGetInput($prompt, $num_digits, $end_key, $timeout);<br>';         
+    break;
+    case 'VoipCmdGosub':
+      $script_name = $cmd->getParam('script_name');
+      $options = $cmd->getParam('options');
+      $output.= '$script_name = "'.$script_name.'"; <br>$options = '._voipscriptui_get_complex_param($options).' <br>';
+      $output.= '$script->addGosub($script_name, $options);<br>';         
+    break;
+    case 'VoipCmdGoto';
+      $label_name = $cmd->getParam('label_name', '');
+      $output.= '$label_name = "'.$label_name.'";<br>';
+      $output.= '$script->addGoto($label_name);<br>';       
+    break;
+    case 'VoipCmdGotoIf';
+      $condition = $cmd->getParam('condition', '');
+      $label_name = $cmd->getParam('label_name', '');
+      $output.= '$condition = "'.$condition.'"; <br>$label_name = "'.$label_name.'";<br>';
+      $output.= '$script->addGotoIf($label_name, $condition);<br>';      
+    break;
+    case 'VoipCmdHangup':
+      $hangup_mode = $cmd->getParam('hangup_mode');
+      $output.= '$hangup_mode = "'.$hangup_mode.'";<br>';
+      $output.= '$script->addHangup($hangup_mode);<br>';  
+    break;
+    case 'VoipCmdJoinConference';
+      $room = $cmd->getParam('room');
+      $muted =  $cmd->getParam('muted', false);
+      $hangup_on_star =  $cmd->getParam('hangup_on_star', false);
+      $output.= '$room = "'.$room.'"; <br>$muted = "'.$muted.'"; <br>$hangup_on_star = "'.$hangup_on_star.'"; <br>';
+      $output.= '$script->addJoinConference($room, $muted, $hangup_on_star);<br>';  
+    break;
+    case 'VoipCmdLabel':
+      $label_name = $cmd->getParam('label_name');
+      $output.= '$label_name = "'.$label_name.'"; <br>';
+      $output.= '$script->addLabel($label_name);<br>';  
+    break;
+    case 'VoipCmdLog':
+      $input = $cmd->getParam('input', '');
+      $name = $cmd->getParam('name', NULL);
+      $output.= '$input = "'.$input.'"; <br>$name = "'.$name.'"; <br>';
+      $output.= '$script->addLog($input, $name);<br>';  
+    break;
+    case 'VoipCmdRecord':
+      $prompt = $cmd->getParam('prompt', '');
+      $timeout = $cmd->getParam('timeout', 5);
+      $end_key = $cmd->getParam('end_key', '#');
+      $max_length = $cmd->getParam('max_length', 3600);
+      $format = $cmd->getParam('format');
+      $play_beep = $cmd->getParam('play_beep');
+      $output.= '$prompt = '._voipscriptui_get_complex_param($prompt).'<br>$timeout = '.$timeout.'; <br>$end_key = "'.$end_key.'"; <br>$max_length = '.$max_length.'; <br>$format = "'.$format.'"; <br>$play_beep = "'.$play_beep.'"; <br>';
+      $output.= '$script->addRecord($prompt, $timeout, $end_key, $max_length, $format, $play_beep);<br>';      
+    break;
+    case 'VoipCmdReject':
+      $reason = $cmd->getParam('reason');
+      $output.= '$reason = "'.$reason.'"; <br>';
+      $output.= '$script->addReject($reason);<br>';      
+    break;
+    case 'VoipCmdReturn':
+      $output.= '$script->addReturn();<br>';          
+    break;
+    case 'VoipCmdRunIvrMenu':
+      $prompt = $cmd->getParam('prompt');
+      $input_options = $cmd->getParam('input_options');
+      $invalid_msg = $cmd->getParam('invalid_msg');
+      $no_input_msg = $cmd->getParam('no_input_msg');
+      $max_attempts = $cmd->getParam('max_attempts');
+      $timeout = $cmd->getParam('timeout');
+      $output.= '$prompt = '._voipscriptui_get_complex_param($prompt).' <br>$input_options = "'.$input_options.'"; <br>$invalid_msg = "'.$invalid_msg.'"; <br>$no_input_msg = "'.$no_input_msg.'"; <br>$max_attempts = '.$max_attempts.'; <br>$timeout = '.$timeout.'; <br>';
+      $output.= '$script->addRunIvrMenu($prompt, $input_options, $invalid_msg, $no_input_msg, $max_attempts, $timeout);<br>';   
+    break;
+    case 'VoipCmdSay':
+      $prompt = $cmd->getParam('prompt');
+      $loop = $cmd->getParam('loop');
+      $output.= '$prompt = '._voipscriptui_get_complex_param($prompt).' <br>$loop = "'.$loop.'"; <br>';
+      $output.= '$script->addSay($prompt, $loop);<br>';   
+    break;
+    case 'VoipCmdSendText';
+      $to = $cmd->getParam('to');
+      $text = $cmd->getParam('text');
+      $network = $cmd->getParam('network');
+      $caller_id = $cmd->getParam('caller_id');    
+      $output.= '$to = "'.$to.'";<br>$text = "'.$text.'";<br>$network = "'.$network.'";<br>$caller_id = "'.$caller_id.'";<br>';
+      $output.= '$script->addSendText($text, $to, $network, $caller_id);<br>';   
+    break;
+    case 'VoipCmdSet';
+      $var_name = $cmd->getParam('var_name');
+      $var_value = $cmd->getParam('var_value');
+      $output.= '$var_name = "'.$var_name.'"; <br>$var_value = "'.$var_value.'"; <br>';
+      $output.= '$script->addSet($var_name, $var_value);<br>';   
+    break;
+    case 'VoipCmdSetLanguage';
+      $language = $script->evalString($cmd->getParam('language'));
+      $output.= '$language = "'.$language.'"; <br>';
+      $output.= '$script->addSetLanguage($language);<br>';  
+    break;
+    case 'VoipCmdSetVoice';
+      $voice = $cmd->getParam('voice');
+      $output.= '$voice = "'.$voice.'"; <br>';
+      $output.= '$script->addSetVoice($voice);<br>';
+    break;
+    case 'VoipCmdUnset';
+      $var_name = $cmd->getParam('var_name');
+      $output.= '$var_name = "'.$var_name.'"; <br>';
+      $output.= '$script->addUnset($var_name);<br>';
+    break; 
+    case 'VoipCmdWait';
+      $time_limit = $script->evalString($cmd->getParam('time_limit'));
+      $output.= '$time_limit = "'.$time_limit.'"; <br>';
+      $output.= '$script->addWait($time_limit);<br>';    
+    break;    
+    }
+    $cmd = $script->getNextCommand();
+  }
+  return $output;
+}
