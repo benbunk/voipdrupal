@@ -1,6 +1,12 @@
 <?php
 /**
- * Implementation of hook_requirements().
+ * @file
+ * Install, update and uninstall functions for the voiptropo module.
+ *
+ */
+
+/**
+ * Implements hook_requirements().
  */
 function voiptropo_requirements($phase) {
   $requirements = array();
@@ -24,6 +30,10 @@ function voiptropo_requirements($phase) {
   return $requirements;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voiptropo_uninstall() {
   /*We have to implement hook_uninstall or hook_requirements will not get called during install
    http://www.silex-consulting.com/2011/05/04/views-3-dependency-in-drupal-6/

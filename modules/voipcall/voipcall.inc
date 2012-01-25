@@ -115,7 +115,7 @@ class VoipCall {
   public static function load($cid) {
     $call = NULL;
     $call_data =
-      db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
+      db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $cid)));
     if ($call_data) {
       // unserialize the call script
       $script = unserialize($call_data->script);
@@ -135,7 +135,7 @@ class VoipCall {
    */
   public static function getCidFromCallId($call_id) {
     // fetch the desired voipcall data
-    $cid = db_result(db_query("SELECT cid FROM {voipcall} WHERE call_id = '%s'", $call_id));
+    $cid = db_query("SELECT cid FROM {voipcall} WHERE call_id = :call_id", array(':call_id' => $call_id))->fetchField();
     return $cid;
   }
 
@@ -174,7 +174,11 @@ class VoipCall {
    */
   public function delete() {
     $cid = $this->call_data->cid;
-    $res = db_query("DELETE FROM {voipcall} WHERE cid=%d", $cid);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {voipcall} WHERE cid=%d", $cid) */
+    $res = db_delete('voipcall')
+  ->condition('cid', $cid)
+  ->execute();
     $this->call_data = NULL;
     return $res;
   }
@@ -379,7 +383,7 @@ class VoipCall {
 
   public function setStartTime($time = NULL) {
     if (!$time) {
-      $time = time();
+      $time = REQUEST_TIME;
     }
     return $this->call_data->start_time = $time;
   }
@@ -390,7 +394,7 @@ class VoipCall {
 
   public function setEndTime($time = NULL) {
     if (!$time) {
-      $time = time();
+      $time = REQUEST_TIME;
     }
     return $this->call_data->end_time = $time;
   }
@@ -546,7 +550,7 @@ class VoipCall {
   public function setTextVariables($inbound_text_contents, $inbound_text_origin, $inbound_text_destination, $inbound_text_network) {
     $script = $this->call_data->script;
     $script->setVar('inbound_text_contents', $inbound_text_contents);
-    $script->setVar('inbound_text_time_received', time());
+    $script->setVar('inbound_text_time_received', REQUEST_TIME);
     $script->setVar('inbound_text_origin', $inbound_text_origin);
     $script->setVar('inbound_text_destination', $inbound_text_destination);
     $script->setVar('inbound_text_network', $inbound_text_network);
@@ -579,7 +583,7 @@ class VoipCall {
 
       $data = new stdClass();
       $update = NULL;
-      $data->created = time();
+      $data->created = REQUEST_TIME;
 
       // set the data uid
       global $user;
@@ -665,9 +669,9 @@ class VoipCall {
     }
     else {
       // load the data
-      $data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $details->cid));
+      $data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $details->cid)));
       $update = 'cid';
-      $data->changed = time();
+      $data->changed = REQUEST_TIME;
     }
 
     // update data fields
@@ -731,7 +735,7 @@ class VoipCall {
 
     $new_start_time = $details->start_time;
     if (!isset($new_start_time)) {
-      $new_start_time = time();
+      $new_start_time = REQUEST_TIME;
     }
     $data->start_time = $new_start_time;
 

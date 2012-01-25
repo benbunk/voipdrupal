@@ -1,19 +1,35 @@
 <?php
 /**
- * Implementation of hook_install().
+ * @file
+ * Install, update and uninstall functions for the voipcall module.
+ *
+ */
+
+/**
+ * Implements hook_install().
  */
 function voipcall_install() {
-  drupal_install_schema('voipcall');
-}
-
-function voipcall_uninstall() {
-  drupal_uninstall_schema('voipcall');
-  //Delete module variables
-  db_query("DELETE FROM {variable} WHERE name LIKE 'voipcall_%%'");
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('voipcall')
 }
 
 /**
- * Implementation of hook_schema().
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function voipcall_uninstall() {
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_uninstall_schema('voipcall')
+  //Delete module variables
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {variable} WHERE name LIKE 'voipcall_%%'") */
+  db_delete('variable')
+  ->condition('name', 'voipcall_%%', 'LIKE')
+  ->execute();
+}
+
+/**
+ * Implements hook_schema().
  */
 function voipcall_schema() {
 
@@ -24,7 +40,7 @@ function voipcall_schema() {
   $schema['voipcall'] = array(
     'fields' => array(
       'cid' => array(
-        'description' => t('CID'),
+        'description' => 'CID',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -148,7 +164,7 @@ function voipcall_schema() {
   $schema['voipsession'] = array(
     'fields' => array(
       'sid' => array(
-        'description' => t('SID'),
+        'description' => 'SID',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -181,10 +197,14 @@ function voipcall_schema() {
   return $schema;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_update_6100() {
   $ret = array();
   //Add current_channel field
-  db_add_field($ret, 'voipcall', 'current_channel',
+  db_add_field('voipcall', 'current_channel',
     array(
     'type' => 'varchar',
     'length' => 255,
@@ -193,7 +213,7 @@ function voipcall_update_6100() {
   )
   );
   //Add call_channel field
-  db_add_field($ret, 'voipcall', 'call_channel',
+  db_add_field('voipcall', 'call_channel',
     array(
     'type' => 'varchar',
     'length' => 255,
@@ -202,7 +222,7 @@ function voipcall_update_6100() {
   )
   );
 
-  db_add_field($ret, 'voipcall', 'current_network',
+  db_add_field('voipcall', 'current_network',
     array(
     'type' => 'varchar',
     'length' => 255,
@@ -210,16 +230,7 @@ function voipcall_update_6100() {
     'default' => '',
   )
   );
-  db_add_field($ret, 'voipcall', 'call_network',
-    array(
-    'type' => 'varchar',
-    'length' => 255,
-    'not null' => TRUE,
-    'default' => '',
-  )
-  );
-
-  db_add_field($ret, 'voipcall', 'inbound_text_script_name',
+  db_add_field('voipcall', 'call_network',
     array(
     'type' => 'varchar',
     'length' => 255,
@@ -228,7 +239,7 @@ function voipcall_update_6100() {
   )
   );
 
-  db_add_field($ret, 'voipcall', 'max_session_duration',
+  db_add_field('voipcall', 'inbound_text_script_name',
     array(
     'type' => 'varchar',
     'length' => 255,
@@ -237,8 +248,17 @@ function voipcall_update_6100() {
   )
   );
 
-  db_drop_field($ret, 'voipcall', 'text_script');
-  db_drop_field($ret, 'voipcall', 'process_response');
+  db_add_field('voipcall', 'max_session_duration',
+    array(
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => '',
+  )
+  );
+
+  db_drop_field('voipcall', 'text_script');
+  db_drop_field('voipcall', 'process_response');
 
   if (!db_table_exists('voipsession')) {
     $schema['voipsession'] = array(
@@ -273,25 +293,42 @@ function voipcall_update_6100() {
       ),
       'primary key' => array('sid'),
     );
-    db_create_table($ret, 'voipsession', $schema['voipsession']);
+    db_create_table('voipsession', $schema['voipsession']);
   }
 
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_update_6101() {
   $ret = array();
-  db_change_field($ret, 'voipcall', 'inbound_text_script_name', 'text_handler', array(
+  db_change_field('voipcall', 'inbound_text_script_name', 'text_handler', array(
     'type' => 'varchar',
     'length' => 255,
     'not null' => TRUE,
     'default' => '',
   ));
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_update_6102() {
   $ret = array();
-  db_drop_field($ret, 'voipcall', 'text_handler');
-  return $ret;
+  db_drop_field('voipcall', 'text_handler');
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }

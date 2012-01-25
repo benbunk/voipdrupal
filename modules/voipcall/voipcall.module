@@ -8,7 +8,7 @@
  */
 
 foreach (array('voipscript.inc', 'voipcall.inc', 'voipsession.inc', 'voipvoice.inc') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
+  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
 }
 
 
@@ -17,7 +17,7 @@ foreach (array('voipscript.inc', 'voipcall.inc', 'voipsession.inc', 'voipvoice.i
  */
 
 /**
- * Implementation of hook_menu()
+ * Implements hook_menu().
  */
 function voipcall_menu() {
   $items = array();
@@ -73,16 +73,21 @@ function voipcall_menu() {
 }
 
 /**
- * Implementation of hook_perm()
+ * Implements hook_permission().
  */
-function voipcall_perm() {
-  return array('administer voipcall setup');
+function voipcall_permission() {
+  return array(
+    'administer voipcall setup' => array(
+      'title' => t('administer voipcall setup'),
+      'description' => t('TODO Add a description for \'administer voipcall setup\''),
+    ),
+  );
 }
 
 /**
  * Form implementation
  */
-function voipcall_admin_form() {
+function voipcall_admin_form($form, &$form_state) {
   $form['voipcall_cid_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Caller id name'),
@@ -204,6 +209,10 @@ function voipcall_admin_form_validate($form, &$form_state) {
 }
 
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_admin_form_submit($form, &$form_state) {
 
   // Remove unecessary values
@@ -262,7 +271,7 @@ function voipcall_get_default_inbound_text_script_name() {
  }
  */
 /**
- * Implementation of hook_voipscript_get_script_names()
+ * Implements hook_voipscript_get_script_names().
  */
 function voipcall_voipscript_get_script_names() {
   $script_names[] = 'voipcall_default_inbound_call_script';
@@ -274,7 +283,7 @@ function voipcall_voipscript_get_script_names() {
 
 
 /**
- * Implementation of hook_voipscript_load_script()
+ * Implements hook_voipscript_load_script().
  */
 function voipcall_voipscript_load_script($script_name, $options = NULL) {
   $script = NULL;
@@ -305,26 +314,38 @@ function voipcall_voipscript_load_script($script_name, $options = NULL) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function voipcall_theme() {
   return array(
     'voipcall_play_beep' => array(
-      'arguments' => array(),
+      'variables' => array(),
     ),
   );
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_play_beep() {
   print theme('voipcall_play_beep');
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function theme_voipcall_play_beep() {
   $filename = drupal_get_path('module', 'voipcall') . '/sound/beep.mp3';
   header('Content-Type: audio/mpeg');
   return readfile($filename);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_call_log() {
   $headers = array(
     array(
@@ -369,6 +390,9 @@ function voipcall_call_log() {
   if ($result) {
     //your basic while loop to get the data
     while ($tmp = db_fetch_array($result)) {
+      // TODO Convert "user_load" to "user_load_multiple" if "$tmp['uid']" is other than a uid.
+      // To return a single user object, wrap "user_load_multiple" with "array_shift" or equivalent.
+      // Example: array_shift(user_load_multiple(array(), $tmp['uid']))
       $owner = user_load($tmp['uid']);
       if (!$tmp['uid']) {
         $tmp['uid'] = t('Anonymous');
@@ -376,19 +400,23 @@ function voipcall_call_log() {
       else {
         $tmp['uid'] = l($owner->name, 'user/' . $owner->name);
       }
-      $tmp['start_time'] = format_date($tmp['start_time'], 'small');
+      $tmp['start_time'] = format_date($tmp['start_time'], 'short');
 
       $tmp['other'] = l('See more', 'voipcall/' . $tmp['cid']);
       $data[] = $tmp;
     }
   }
-  $output .= theme('table', $headers, $data);
-  $output .= theme('pager', NULL, $limit, 0);
+  $output .= theme('table', array('header' => $headers, 'rows' => $data));
+  $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_call_page($cid) {
-  $call_data = db_fetch_array(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
+  $call_data = db_fetch_array(db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $cid)));
   foreach ($call_data as $label => $data) {
     $output .= "<div><b>" . $label . ":</b> " . $data . "</div>";
   }
@@ -396,10 +424,18 @@ function voipcall_call_page($cid) {
   return $output;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_call_page_title($arg) {
   return "VoIP Call CID " . $arg;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_session_log() {
   $headers = array(
     array(
@@ -439,26 +475,34 @@ function voipcall_session_log() {
   if ($result) {
     //your basic while loop to get the data
     while ($tmp = db_fetch_array($result)) {
-      $tmp['expiring_at'] = format_date($tmp['expiring_at'], 'small');
+      $tmp['expiring_at'] = format_date($tmp['expiring_at'], 'short');
       $tmp['call_id'] = l($tmp['call_id'], 'voipcall/' . $tmp['call_id']);
       $tmp['delete'] = l('Delete', 'voipsession/delete/' . $tmp['sid']);
       $data[] = $tmp;
     }
   }
-  $output .= theme('table', $headers, $data);
-  $output .= theme('pager', NULL, $limit, 0);
+  $output .= theme('table', array('header' => $headers, 'rows' => $data));
+  $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipcall_session_delete($sid) {
-  db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid);
+  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid) */
+  db_delete('voipsession')
+  ->condition('sid', $sid)
+  ->execute();
   $output = t("Voipsession @sid deleted. ", array('@sid' => $sid));
   $output .= l('Go back', 'admin/voip/session/log');
   return $output;
 }
 
 /**
- * Implementation of hook_cron()
+ * Implements hook_cron().
  */
 function voipcall_cron() {
   VoipSession::deleteExpiredSessions();

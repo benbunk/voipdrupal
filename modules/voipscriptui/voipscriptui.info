@@ -1,4 +1,4 @@
-core = "7.x"
+core = 7.x
 description = "Provides a web-based interface for developers to create and test VoIP Drupal scripts"
 name = "VoIP Script UI"
 package = "VoIP Drupal"
@@ -10,3 +10,4 @@ dependencies[] = "views"
 
 features[content][] = "voipscriptui-field_voipscriptui_code"
 features[node][] = "voipscriptui"
+

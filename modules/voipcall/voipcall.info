@@ -1,9 +1,9 @@
-core = "7.x"
+core = 7.x
 name = "VoIP Call"
 description = Core of VoIP Drupal.
 package = "VoIP Drupal"
 
-files[] = voipcall.inc
-files[] = voipscript.inc
-files[] = voipsession.inc
-files[] = voipvoice.inc
+
+
+
+

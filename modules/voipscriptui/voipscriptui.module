@@ -4,15 +4,15 @@
  */
 
 foreach (array('voipscriptui.features.inc') as $file) {
-  require_once($file);
+  require_once DRUPAL_ROOT . '/' . $file;
 }
 
 /**
- * Implementation of hook_voipscript_get_script_names()
+ * Implements hook_voipscript_get_script_names().
  */
 function voipscriptui_voipscript_get_script_names() {
   $script_names = array();
-  $result = db_query('SELECT n.title FROM {node} n WHERE n.type = "voipscriptui" and n.status = 1');
+  $result = db_query('SELECT n.title FROM {node} n WHERE n.type = :n.type and n.status = :n.status', array(':n.type' => "voipscriptui", ':n.status' => 1));
   while ($node = db_fetch_object($result)) {
     $script_names[] = $node->title;
   }
@@ -21,7 +21,7 @@ function voipscriptui_voipscript_get_script_names() {
 
 
 /**
- * Implementation of hook_voipscript_load_script()
+ * Implements hook_voipscript_load_script().
  */
 function voipscriptui_voipscript_load_script($script_name, $options = NULL) {
   $script = NULL;
@@ -47,15 +47,16 @@ function voipscriptui_voipscript_load_script($script_name, $options = NULL) {
 }
 
 /**
- * Implementation of hook_nodeapi()
+ * Implements hook_node_validate().
  */
-function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
-  if ($node->type == 'voipscriptui'   && $op == 'validate') {
+function voipscriptui_node_validate($node, $form) {
+  if ($node->type == 'voipscriptui'    && TRUE) {
     //check for duplicate script names before saving a new script
     if ($node->nid) {
       $where = "AND nid!=" . $node->nid;
     }
-    $exist = db_result(db_query("SELECT nid FROM {node} WHERE type='voipscriptui' AND title='%s' $where LIMIT 1", $node->title));
+    // TODO Please convert this statement to the D7 database API syntax.
+    $exist = db_query("SELECT nid FROM {node} WHERE type='voipscriptui' AND title='%s' $where LIMIT 1", $node->title)->fetchField();
     if ($exist) {
       form_set_error('field_voipscriptui_code',
         t('A script called @script_name already exists. To edit it, click <a target="_blank" href="' . base_path() . 'node/' . $exist . '/edit">here</a>',
@@ -76,7 +77,12 @@ function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
 }
 
 /**
- * Implementation of hook_menu()
+ * Implements hook_nodeapi().
+ */
+function voipscriptui_nodeapi_OLD($node, $op, $a3, $a4 ) { }
+
+/**
+ * Implements hook_menu().
  */
 function voipscriptui_menu() {
   $items = array();
@@ -104,14 +110,14 @@ function _voipscriptui_check_view_access() {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
  */
 function voipscriptui_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "voipscriptui_node_form") {
     if (isset($_GET['clone_voipscript'])) {
       if (isset($_GET['type']) && $_GET['type'] == 'node') {
         $nid = $_GET['clone_voipscript'];
-        $code = db_result(db_query("SELECT field_voipscriptui_code_value FROM {content_type_voipscriptui} WHERE nid=%d", $nid));
+        $code = db_query("SELECT field_voipscriptui_code_value FROM {content_type_voipscriptui} WHERE nid = :nid", array(':nid' => $nid))->fetchField();
       }
       else {
         $script_name = $_GET['clone_voipscript'];
@@ -124,16 +130,41 @@ function voipscriptui_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function voipscriptui_perm() {
-  return array('clone all voipscripts', 'clone ui voipscripts', 'view all voipscripts', 'view ui voipscripts');
+function voipscriptui_permission() {
+  return array(
+    'clone all voipscripts' => array(
+      'title' => t('clone all voipscripts'),
+      'description' => t('TODO Add a description for \'clone all voipscripts\''),
+    ),
+    'clone ui voipscripts' => array(
+      'title' => t('clone ui voipscripts'),
+      'description' => t('TODO Add a description for \'clone ui voipscripts\''),
+    ),
+    'view all voipscripts' => array(
+      'title' => t('view all voipscripts'),
+      'description' => t('TODO Add a description for \'view all voipscripts\''),
+    ),
+    'view ui voipscripts' => array(
+      'title' => t('view ui voipscripts'),
+      'description' => t('TODO Add a description for \'view ui voipscripts\''),
+    ),
+  );
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipscriptui_script_title($script_name) {
   return $script_name . ' Script';
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipscriptui_scripts_page() {
   $clone_all = user_access('clone all voipscripts');
   $clone_ui = user_access('clone ui voipscripts');
@@ -160,7 +191,7 @@ function voipscriptui_scripts_page() {
   }
 
   // get voipscriptui scripts
-  $res = db_query("SELECT nid, title FROM {node} WHERE type='voipscriptui'");
+  $res = db_query("SELECT nid, title FROM {node} WHERE type = :type", array(':type' => 'voipscriptui'));
   while ($script_ui = db_fetch_array($res)) {
     $row = array(
       'title' => $script_ui['title'],
@@ -194,11 +225,15 @@ function voipscriptui_scripts_page() {
   }
 
   ksort($data);
-  $output .= theme('table', $headers, $data);
-  $output .= theme('pager', NULL, 50, 0);
+  $output .= theme('table', array('header' => $headers, 'rows' => $data));
+  $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipscriptui_scripts_view_page($script_name) {
   $output = _voipscriptui_reverse_parser($script_name);
   return $output;

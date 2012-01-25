@@ -7,7 +7,7 @@
  * Implementation of the VoipLogServer class
  */
 
-require_once('voipserver.inc');
+require_once DRUPAL_ROOT . '/' . 'voipserver.inc';
 
 
 /**
@@ -100,7 +100,7 @@ class VoipLogServer extends VoipServer {
 }
 
 /**
- * Implementation of hook_voipserver_info()
+ * Implements hook_voipserver_info().
  */
 function voip_voipserver_info() {
   $server = new VoipLogServer();

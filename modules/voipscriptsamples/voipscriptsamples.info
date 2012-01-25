@@ -1,4 +1,4 @@
-core = "7.x"
+core = 7.x
 description = "Provides sample scripts that demonstrate the capabilities of the VoIP Drupal platform."
 name = "VoIP Script Samples"
 package = "VoIP Drupal"
@@ -6,5 +6,5 @@ project = "voipscriptsamples"
 
 dependencies[] = "voipcall"
 
-files[] = includes/class.xml.parser.php
-files[] = includes/voipscriptsamples_weather.inc
+
+

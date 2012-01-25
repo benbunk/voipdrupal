@@ -7,7 +7,7 @@
  */
 
 foreach (array('twilio.php') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
+  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
 }
 
 
@@ -126,7 +126,7 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $call->setDirection($dir_tmp);
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
-    $call->setStartTime(time());
+    $call->setStartTime(REQUEST_TIME);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     // save the call
@@ -143,7 +143,7 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $call->setDirection($dir_tmp);
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::IN_PROGRESS);
-    $call->setStartTime(time());
+    $call->setStartTime(REQUEST_TIME);
 
     $call->setCallerNumber($from);
     $call->setDestNumber($to);
@@ -230,11 +230,11 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
   // Twilio calls our process_hangup url to inform, once again, that the call has been hanged.
 
   if ($twilio_action == 'process_sms_callback'
-       || $twilio_action == 'process_inbound_text'
-       || $twilio_action == 'process_send_sms'
-       || $twilio_action == 'process_record'
-       || $twilio_action == 'process_record_mp3'
-       || $twilio_action == 'process_empty_recording'
+        || $twilio_action == 'process_inbound_text'
+        || $twilio_action == 'process_send_sms'
+        || $twilio_action == 'process_record'
+        || $twilio_action == 'process_record_mp3'
+        || $twilio_action == 'process_empty_recording'
   ) {
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
@@ -545,7 +545,7 @@ function _voiptwilio_script_handler($call) {
             $found = TRUE;
             $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $response .= "<Say>$text</Say>";
           }
           break;
@@ -562,7 +562,7 @@ function _voiptwilio_script_handler($call) {
             $found = TRUE;
             $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $response .= "<Say>$text</Say>";
           }
           break;
@@ -581,7 +581,7 @@ function _voiptwilio_script_handler($call) {
               $found = TRUE;
               $text = 'Processing error. Please contact your system administrator.';
               $langcode = $script->getLanguage();
-              $text = t($text, NULL, $langcode);
+              $text = t($text, NULL, array('langcode' => $langcode));
               $response .= "<Say>$text</Say>";
             }
           }
@@ -746,7 +746,7 @@ function _voiptwilio_script_handler($call) {
             $language = $voice->getLanguage();
             $text = 'Processing error. Please contact your system administrator.';
             // translate the text
-            $text = t($text, NULL, $language);
+            $text = t($text, NULL, array('langcode' => $language));
             $response .= "<Say voice='$gender' language='$language'>$text</Say>";
           }
           break;
@@ -808,7 +808,7 @@ function _voiptwilio_script_handler($call) {
 //       not be sms capable, it might incur in a processing error.
             // Use the system's number as the default caller id
             $default_cid_number = variable_get('voipcall_cid_number', NULL);
-            $caller_id = $script->evalString($cmd->getParam('caller_id', 
+            $caller_id = $script->evalString($cmd->getParam('caller_id',  
                                                          $default_cid_number));
             $rc = TRUE;
             switch (strtolower($network)) {
@@ -902,7 +902,7 @@ function _voiptwilio_send_response($response) {
   $output .= $response;
   $output .= '</Response>';
 
-  drupal_set_header('Content-Type: text/xml; charset=utf-8');
+  drupal_add_http_header('Content-Type', 'text/xml; charset=utf-8');
   //TODO: watchdog('response', htmlspecialchars($output));
   print $output;
 

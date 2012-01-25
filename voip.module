@@ -7,7 +7,7 @@
  */
 
 foreach (array('voip_error.inc', 'voipserver.inc', 'voiplogserver.inc') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
+  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file;
 }
 
 
@@ -142,19 +142,19 @@ function voip_text_handler($text_content, $origin, $destination, $time, $network
 
 
 /**
- * Implementation of hook_sms_incoming().
+ * Implements hook_sms_incoming().
  */
 function voip_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
     watchdog('voipcall', $msg);
-    voip_text_handler($message, $number, '', time());
+    voip_text_handler($message, $number, '', REQUEST_TIME);
   }
 }
 
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function voip_menu() {
   $items = array();
@@ -192,19 +192,36 @@ function voip_menu() {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function voip_perm() {
-  return array('administer voip drupal framework', 'hangup any calls', 'hangup own calls', 'make outbound calls');
+function voip_permission() {
+  return array(
+    'administer voip drupal framework' => array(
+      'title' => t('administer voip drupal framework'),
+      'description' => t('TODO Add a description for \'administer voip drupal framework\''),
+    ),
+    'hangup any calls' => array(
+      'title' => t('hangup any calls'),
+      'description' => t('TODO Add a description for \'hangup any calls\''),
+    ),
+    'hangup own calls' => array(
+      'title' => t('hangup own calls'),
+      'description' => t('TODO Add a description for \'hangup own calls\''),
+    ),
+    'make outbound calls' => array(
+      'title' => t('make outbound calls'),
+      'description' => t('TODO Add a description for \'make outbound calls\''),
+    ),
+  );
 }
 
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function voip_theme() {
   $items['voip_admin_default_form'] =
-       array('arguments' => array('form' => NULL));
+       array('render element' => 'form');
 
   return $items;
 }

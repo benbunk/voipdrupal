@@ -12,6 +12,10 @@ function _voipscriptsamples_sms_group() {
   $script->addHangup('reset');
   return $script;
 }
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipscriptsamples_sms_group_parse_request($msg, $from) {
   $msg = trim($msg);
   if (!$msg) {

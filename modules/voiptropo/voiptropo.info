@@ -6,7 +6,7 @@ core = 7.x
 dependencies[] = voip
 dependencies[] = voipcall
 
-files[] = includes/voiptroposcript.inc
-files[] = includes/voiptroposerver.inc
-files[] = tropo_webapi/tropo-rest.class.php
-files[] = tropo_webapi/tropo.class.php
+
+
+
+

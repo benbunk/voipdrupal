@@ -115,7 +115,7 @@ function _voipscriptsamples_get_forecast($zip) {
  */
 
 function _voipscriptsamples_get_weather_info($woeid, $unit = 'f') {
-  require_once('class.xml.parser.php');
+  require_once DRUPAL_ROOT . '/' . 'class.xml.parser.php';
 
   $yahoo_url = "http://weather.yahooapis.com/forecastrss?w=$woeid&u=$unit";
   $yahoo_ns = "http://xml.weather.yahoo.com/ns/rss/1.0";

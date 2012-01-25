@@ -7,7 +7,7 @@
  */
 
 foreach (array('plivo.php') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
+  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
 }
 
 
@@ -133,7 +133,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
     $call->setDirection($dir_tmp);
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
-    $call->setStartTime(time());
+    $call->setStartTime(REQUEST_TIME);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     // save the call
@@ -557,7 +557,7 @@ function _voipplivo_script_handler($call) {
             $found = TRUE;
             $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $response .= "<Speak>$text</Speak>";
           }
           break;
@@ -574,7 +574,7 @@ function _voipplivo_script_handler($call) {
             $found = TRUE;
             $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $response .= "<Speak>$text</Speak>";
           }
           break;
@@ -593,7 +593,7 @@ function _voipplivo_script_handler($call) {
               $found = TRUE;
               $text = 'Processing error. Please contact your system administrator.';
               $langcode = $script->getLanguage();
-              $text = t($text, NULL, $langcode);
+              $text = t($text, NULL, array('langcode' => $langcode));
               $response .= "<Speak>$text</Speak>";
             }
           }
@@ -762,7 +762,7 @@ function _voipplivo_script_handler($call) {
             $text = 'Processing error. Please contact your system administrator.';
             // translate the text
             $langcode = $language;
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $response .= "<Speak voice='$voice' language='$language'>$text</Speak>";
           }
           break;
@@ -872,7 +872,7 @@ function _voipplivo_send_response($response) {
   $output .= $response;
   $output .= '</Response>';
 
-  drupal_set_header('Content-Type: text/xml; charset=utf-8');
+  drupal_add_http_header('Content-Type', 'text/xml; charset=utf-8');
   watchdog('response', 'Response ' . print_r($output, true));
   print $output;
 

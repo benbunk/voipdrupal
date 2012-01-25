@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implementation of hook_content_default_fields().
+ * Implements hook_content_default_fields().
  */
 function voipscriptui_content_default_fields() {
   $fields = array();

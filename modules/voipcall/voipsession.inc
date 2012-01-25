@@ -33,10 +33,14 @@ class VoipSession {
   }
 
   public static function getSessionByInboundNumber($origin_number, $destination_number) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $origin_number, $destination_number));
-    if ($session_data->expiring_at < time()) {
+    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $origin_number, ':destination_number' => $destination_number)));
+    if ($session_data->expiring_at < REQUEST_TIME) {
       //Delete this session, its expired
-      db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+      db_delete('voipsession')
+  ->condition('sid', $session_data->sid)
+  ->execute();
       return FALSE;
     }
     if ($session_data) {
@@ -48,10 +52,14 @@ class VoipSession {
   }
 
   public static function getSessionByOutboundNumber($origin_number, $destination_number) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $destination_number, $origin_number));
-    if ($session_data->expiring_at < time()) {
+    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $destination_number, ':destination_number' => $origin_number)));
+    if ($session_data->expiring_at < REQUEST_TIME) {
       //Delete this session, its expired
-      db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+      db_delete('voipsession')
+  ->condition('sid', $session_data->sid)
+  ->execute();
       return FALSE;
     }
     if ($session_data) {
@@ -72,10 +80,14 @@ class VoipSession {
         $search_number = $destination_number;
       }
 
-      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' || destination_number='%s'", $search_number, $search_number));
-      if ($session_data->expiring_at < time()) {
+      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number || destination_number = :destination_number", array(':origin_number' => $search_number, ':destination_number' => $search_number)));
+      if ($session_data->expiring_at < REQUEST_TIME) {
         //Delete this session, its expired
-        db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
+        // TODO Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+        db_delete('voipsession')
+  ->condition('sid', $session_data->sid)
+  ->execute();
         $session_data = NULL;
       }
 
@@ -98,10 +110,14 @@ class VoipSession {
    *    Session instance or FALSE.
    */
   public static function getSessionByCid($cid) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id=%d", $cid));
-    if ($session_data->expiring_at < time()) {
+    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id = :call_id", array(':call_id' => $cid)));
+    if ($session_data->expiring_at < REQUEST_TIME) {
       //Delete this session, its expired
-      db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+      db_delete('voipsession')
+  ->condition('sid', $session_data->sid)
+  ->execute();
       return false;
     }
     if ($session_data) {
@@ -120,15 +136,19 @@ class VoipSession {
    */
   public static function deleteExpiredSessions() {
     $deleted_call_ids = array();
-    $time = time();
+    $time = REQUEST_TIME;
 
     //Get call ids of deleted sessions
-    $res = db_query("SELECT * FROM {voipsession} WHERE expiring_at<'%s'", $time);
+    $res = db_query("SELECT * FROM {voipsession} WHERE expiring_at < :expiring_at", array(':expiring_at' => $time));
     while ($session = db_fetch_object($res)) {
       $deleted_call_ids[] = $session->call_id;
     }
     //Delete the sessions
-    db_query("DELETE FROM {voipsession} WHERE expiring_at<'%s'", $time);
+    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    /* db_query("DELETE FROM {voipsession} WHERE expiring_at<'%s'", $time) */
+    db_delete('voipsession')
+  ->condition('expiring_at', $time, '<')
+  ->execute();
     return $deleted_call_ids;
   }
 
@@ -168,7 +188,7 @@ class VoipSession {
       $expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
     }
     $this->session_data->expiration_time = $expiration_time;
-    $this->session_data->expiring_at = time() + $expiration_time;
+    $this->session_data->expiring_at = REQUEST_TIME + $expiration_time;
   }
 
   /**
@@ -203,12 +223,12 @@ class VoipSession {
         $expiration_time = $this->session_data->expiration_time;
       }
       // initialize the 'Expiring at' field
-      $this->session_data->expiring_at = time() + $expiration_time;
+      $this->session_data->expiring_at = REQUEST_TIME + $expiration_time;
 
     }
     else {
       // load the data
-      $data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE sid=%d", $this->session_data->sid));
+      $data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE sid = :sid", array(':sid' => $this->session_data->sid)));
       $update = 'sid';
     }
 
@@ -245,7 +265,11 @@ class VoipSession {
   public function destroy() {
     $sid = $this->session_data->sid;
     if ($sid) {
-      db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid);
+      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid) */
+      db_delete('voipsession')
+  ->condition('sid', $sid)
+  ->execute();
     }
     watchdog('voipsession', "Destroying session $sid");
     $this->session_data = NULL;

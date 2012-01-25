@@ -17,13 +17,17 @@ module_load_include('php', 'voiptropo', 'tropo_webapi/tropo.class');
 //-----------------------------------------------------------------------------
 
 /**
- * Implementation of hook_voip_serverinfo().
+ * Implements hook_voip_serverinfo().
  */
 function voiptropo_voipserver_info() {
   $server = new voiptropoServer();
   return $server;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voiptropo_admin_form($configuration) {
   $form['voiptropo_account_username'] = array(
     '#type' => 'textfield',
@@ -102,6 +106,10 @@ function voiptropo_admin_form_validate($form, &$form_state) {
 /*
  * Implementation of hook_menu()
  */
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voiptropo_menu() {
   $items = array();
 
@@ -158,7 +166,7 @@ function _voiptropo_grammar_numeric_star_hash($num_digits = 1) {
   die();
 }
 /**
- * Implementation of hook_voipcall_load_script()
+ * Implements hook_voipcall_load_script().
  */
 function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
 
@@ -207,7 +215,7 @@ function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
 }
 
 /**
- * Implementation of hook_voipscript_get_script_names()
+ * Implements hook_voipscript_get_script_names().
  */
 function voiptropo_voipscript_get_script_names() {
   $script_names[] = 'voiptropo_speech_recognition_demo';

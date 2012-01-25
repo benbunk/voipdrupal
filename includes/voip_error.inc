@@ -16,6 +16,10 @@ $_voip_error;
 /*
  * Report processing errors associated with the Voip Drupal infrastructure.
  */
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voip_error($message = NULL) {
   global $_voip_error;
   if ($message) {
@@ -26,11 +30,19 @@ function voip_error($message = NULL) {
   return $_voip_error;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voip_error_message() {
   global $_voip_error;
   return $_voip_error->message;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voip_error_reset() {
   global $_voip_error;
   $_voip_error = NULL;

@@ -10,7 +10,7 @@
 // Include files
 //-----------------------------------------------------------------------------
 foreach (array('voipplivo.inc', 'voipplivoserver.inc') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
+  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file;
 }
 
 
@@ -19,13 +19,17 @@ foreach (array('voipplivo.inc', 'voipplivoserver.inc') as $file) {
 //-----------------------------------------------------------------------------
 
 /**
- * Implementation of hook_voip_serverinfo().
+ * Implements hook_voip_serverinfo().
  */
 function voipplivo_voipserver_info() {
   $server = new VoipPlivoServer();
   return $server;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function voipplivo_admin_form($configuration) {
 
   $form['voipplivo_restapi_url'] = array(
@@ -127,6 +131,10 @@ function voipplivo_admin_form_validate($form, &$form_state) {
 
 /*
  * Implementation of hook_menu()
+ */
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
  */
 function voipplivo_menu() {
   $items = array();

@@ -149,7 +149,7 @@ function _voiptropo_call_handler($tropo_action = '', $cid = NULL, $dial_response
     $call->setDirection($dir_tmp);
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
-    $call->setStartTime(time());
+    $call->setStartTime(REQUEST_TIME);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     $call->save();
@@ -522,7 +522,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $number = $script->evalString($cmd->getParam('number'));
           $number = str_replace(" ", "", $number); //remove any spaces from number
-          if ($call->getCurrentChannel() == 'text'   || $call->getCurrentChannel() == 'offline_text') {
+          if ($call->getCurrentChannel() == 'text'    || $call->getCurrentChannel() == 'offline_text') {
             //In case VoipCmdDial is called within text channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $tropo->hangup();
@@ -592,7 +592,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $found = TRUE;
             $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $tropo->say($text);
           }
           break;
@@ -609,7 +609,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $found = TRUE;
             $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $tropo->say($text);
           }
           break;
@@ -628,7 +628,7 @@ function _voiptropo_script_handler($call, &$tropo) {
               $found = TRUE;
               $text = 'Processing error. Please contact your system administrator.';
               $langcode = $script->getLanguage();
-              $text = t($text, NULL, $langcode);
+              $text = t($text, NULL, array('langcode' => $langcode));
               $tropo->say($text);
             }
           }
@@ -831,7 +831,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $text = 'Processing error. Please contact your system administrator.';
             // translate the text
             $langcode = $script->getLanguage();
-            $text = t($text, NULL, $langcode);
+            $text = t($text, NULL, array('langcode' => $langcode));
             $tropo->say($text);
           }
           break;
@@ -1037,8 +1037,8 @@ function _voiptropo_file_save_upload($source, $validators, $dest) {
 
   // If we made it this far it's safe to record this file in the database.
   $file->uid = $user->uid;
-  $file->status = FILE_STATUS_TEMPORARY;
-  $file->timestamp = time();
+  $file->status = ~FILE_STATUS_PERMANENT;
+  $file->timestamp = REQUEST_TIME;
   drupal_write_record('files', $file);
   return $file;
 }
@@ -1192,7 +1192,7 @@ function _voiptropo_prompt_validate($script, $prompt) {
   return $prompt_list;
 }
 
-function _voiptropo_get_input($type, $call, $cmd,   $script, &$tropo) {
+function _voiptropo_get_input($type, $call, $cmd,    $script, &$tropo) {
   $call->setCallStatus(VoipCall::IN_PROGRESS);
   $menu_path = 'voip/tropo/callhandler';
   $cid = $call->getCid();
