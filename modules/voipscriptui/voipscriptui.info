@@ -1,17 +1,12 @@
-core = "6.x"
-dependencies[] = "features"
-dependencies[] = "text"
-dependencies[] = "views"
+core = "7.x"
 description = "Provides a web-based interface for developers to create and test VoIP Drupal scripts"
-features[content][] = "voipscriptui-field_voipscriptui_code"
-features[node][] = "voipscriptui"
 name = "VoIP Script UI"
 package = "VoIP Drupal"
 project = "voipscriptui"
 
-; Information added by drupal.org packaging script on 2012-01-19
-version = "6.x-1.0-beta8"
-core = "6.x"
-project = "voipdrupal"
-datestamp = "1326947747"
+dependencies[] = "features"
+dependencies[] = "text"
+dependencies[] = "views"
 
+features[content][] = "voipscriptui-field_voipscriptui_code"
+features[node][] = "voipscriptui"

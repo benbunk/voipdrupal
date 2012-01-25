@@ -1,14 +1,11 @@
-; $Id$
 name = "VoIP Twilio"
 description = "Allows the VoIP Drupal framework to work with the Twilio service."
 package = VoIP Drupal
+core = 7.x
+
 dependencies[] = voip
 dependencies[] = voipcall
-core = 6.x
 
-; Information added by drupal.org packaging script on 2012-01-19
-version = "6.x-1.0-beta8"
-core = "6.x"
-project = "voipdrupal"
-datestamp = "1326947747"
-
+files[] = includes/twilio.php
+files[] = includes/twilio.php-original
+files[] = includes/voiptwilioserver.inc
