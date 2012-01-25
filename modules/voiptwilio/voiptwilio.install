@@ -4,7 +4,7 @@
  */
 function voiptwilio_requirements($phase) {
   $requirements = array();
-  $t = get_t(); 
+  $t = get_t();
 
   if ($phase == 'runtime' || $phase == 'install') {
     if (!extension_loaded("curl")) {
@@ -25,7 +25,7 @@ function voiptwilio_requirements($phase) {
 }
 
 function voiptwilio_uninstall() {
- /*We have to implement hook_uninstall or hook_requirements will not get called during install
+  /*We have to implement hook_uninstall or hook_requirements will not get called during install
    http://www.silex-consulting.com/2011/05/04/views-3-dependency-in-drupal-6/
- */
+   */
 }

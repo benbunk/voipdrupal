@@ -29,14 +29,14 @@ function voipcall_menu() {
     'page arguments' => array('voipcall_admin_form', NULL),
     'access arguments' => array('administer voipcall setup'),
   );
-  
+
   $items['admin/voip/call/log'] = array(
     'title' => 'VoIP Call Log',
     'description' => 'Lists all VoIP Drupal calls.',
     'page callback' => 'voipcall_call_log',
     'access arguments' => array('administer voipcall setup'),
   );
-  
+
   $items['admin/voip/session/log'] = array(
     'title' => 'VoIP Session Log',
     'description' => 'Lists all VoIP Drupal sessions.',
@@ -52,23 +52,23 @@ function voipcall_menu() {
     'page arguments' => array(1),
     'access arguments' => array('administer voipcall setup'),
   );
-  
-   $items['voipsession/delete/%'] = array(
+
+  $items['voipsession/delete/%'] = array(
     'title' => 'VoIP Delete Session',
     'description' => 'Delete voip session.',
     'page callback' => 'voipcall_session_delete',
     'page arguments' => array(2),
     'access arguments' => array('administer voipcall setup'),
   );
-  
-   $items['voip/sound/beep'] = array(
+
+  $items['voip/sound/beep'] = array(
     'title' => 'Beep sound',
     'description' => 'Plays beep sound',
     'page callback' => 'voipcall_play_beep',
-    'access callback' => TRUE, 
+    'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
- 
+
   return $items;
 }
 
@@ -76,7 +76,7 @@ function voipcall_menu() {
  * Implementation of hook_perm()
  */
 function voipcall_perm() {
- return array('administer voipcall setup');
+  return array('administer voipcall setup');
 }
 
 /**
@@ -89,7 +89,7 @@ function voipcall_admin_form() {
     '#description' => t("Caller id name to be used in VoIP Drupal calls. Note that, in the U.S., this value is ignored and replaced by the caller name stored in the telecommunications service's database"),
     '#size' => 40,
     '#maxlength' => 255,
-    '#default_value' => variable_get('voipcall_cid_name',''),
+    '#default_value' => variable_get('voipcall_cid_name', ''),
   );
 
   $form['voipcall_cid_number'] = array(
@@ -98,17 +98,17 @@ function voipcall_admin_form() {
     '#description' => t('Caller id number to be used in VoIP Drupal calls.'),
     '#size' => 40,
     '#maxlength' => 255,
-    '#default_value' => variable_get('voipcall_cid_number',''),
+    '#default_value' => variable_get('voipcall_cid_number', ''),
     '#required' => TRUE,
   );
-  
+
   $form['voipcall_text_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Text number'),
     '#description' => t('Default text number.  Only used if it is different from the Caller id number.'),
     '#size' => 40,
     '#maxlength' => 255,
-    '#default_value' => variable_get('voipcall_text_number',''),
+    '#default_value' => variable_get('voipcall_text_number', ''),
   );
 
   $form['voipcall_inbound_call_script_name'] = array(
@@ -134,14 +134,14 @@ function voipcall_admin_form() {
     '#options' => VoipScript::getScriptNames(),
     '#default_value' => variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script'),
   );
-  
+
   /*$form['voipcall_outbound_text_script_name'] = array(
-    '#type' => 'select',
-    '#title' => t('Outbound text script name'),
-    '#description' => t('Name of the dialplan script to be used whenever the system sends a text message.'),
-    '#options' => VoipScript::getScriptNames(),
-    '#default_value' => variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script'),
-  );*/
+   '#type' => 'select',
+   '#title' => t('Outbound text script name'),
+   '#description' => t('Name of the dialplan script to be used whenever the system sends a text message.'),
+   '#options' => VoipScript::getScriptNames(),
+   '#default_value' => variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script'),
+   );*/
 
 
   if (module_exists('sms')) {
@@ -150,13 +150,13 @@ function voipcall_admin_form() {
   else {
     $disabled = TRUE;
   }
-  
+
   $form['voipcall_use_sms_framework'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use SMS Framework'),
-      '#description' => t('By default, SMS messages are sent via the default VoIP server. Check this option to use the Drupal SMS Framework instead.'),
-      '#default_value' => variable_get('voipcall_use_sms_framework', 0),
-      '#disabled' => $disabled,
+    '#type' => 'checkbox',
+    '#title' => t('Use SMS Framework'),
+    '#description' => t('By default, SMS messages are sent via the default VoIP server. Check this option to use the Drupal SMS Framework instead.'),
+    '#default_value' => variable_get('voipcall_use_sms_framework', 0),
+    '#disabled' => $disabled,
   );
 
   $form['voipcall_default_session_time'] = array(
@@ -167,7 +167,7 @@ function voipcall_admin_form() {
   );
 
   $form['submit'] = array(
-    '#type' => 'submit', 
+    '#type' => 'submit',
     '#value' => t('Save'),
   );
 
@@ -180,32 +180,32 @@ function voipcall_admin_form() {
  */
 function voipcall_admin_form_validate($form, &$form_state) {
   $values = $form_state['values'];
-// TODO: provide feedback directly on the affected fields...
+  // TODO: provide feedback directly on the affected fields...
   $script_name = $values['voipcall_inbound_call_script_name'];
   $script = VoipScript::loadScript($script_name);
-  if(!$script){
+  if (!$script) {
     form_set_error('', t('Invalid inbound call script name: @script_name.', array('@script_name' => $script_name)));
   }
   $script_name = $values['voipcall_outbound_call_script_name'];
   $script = VoipScript::loadScript($script_name);
-  if(!$script){
+  if (!$script) {
     form_set_error('', t('Invalid outbound call script name: @script_name.', array('@script_name' => $script_name)));
   }
 
   $script_name = $values['voipcall_inbound_text_script_name'];
   $script = VoipScript::loadScript($script_name);
-  if(!$script){
+  if (!$script) {
     form_set_error('', t('Invalid inbound text script name: @script_name.', array('@script_name' => $script_name)));
   }
-  
-  if ($values['voipcall_default_session_time']<0) {
+
+  if ($values['voipcall_default_session_time'] < 0) {
     form_set_error('voipcall_default_session_time', t('Session duration time must be positive integer.'));
   }
 }
 
 
 function voipcall_admin_form_submit($form, &$form_state) {
-  
+
   // Remove unecessary values
   unset($form_state['values']['op'], $form_state['values']['submit'], $form_state['values']['form_token'], $form_state['values']['form_id']);
 
@@ -255,12 +255,12 @@ function voipcall_get_default_inbound_text_script_name() {
 /**
  * Return the name of the default script to be used with outgoing text messages
  */
- /*
-function voipcall_get_default_outbound_text_script_name() {
-  $script_name = variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script');
-  return $script_name;
-}
-*/
+/*
+ function voipcall_get_default_outbound_text_script_name() {
+ $script_name = variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script');
+ return $script_name;
+ }
+ */
 /**
  * Implementation of hook_voipscript_get_script_names()
  */
@@ -268,7 +268,7 @@ function voipcall_voipscript_get_script_names() {
   $script_names[] = 'voipcall_default_inbound_call_script';
   $script_names[] = 'voipcall_default_outbound_call_script';
   $script_names[] = 'voipcall_default_inbound_text_script';
-  
+
   return $script_names;
 }
 
@@ -276,9 +276,9 @@ function voipcall_voipscript_get_script_names() {
 /**
  * Implementation of hook_voipscript_load_script()
  */
-function voipcall_voipscript_load_script($script_name, $options=NULL) {
+function voipcall_voipscript_load_script($script_name, $options = NULL) {
   $script = NULL;
-  switch($script_name) {
+  switch ($script_name) {
     default:
       break;
     case 'voipcall_default_inbound_call_script':
@@ -315,44 +315,70 @@ function voipcall_theme() {
   );
 }
 
-function voipcall_play_beep(){
-   print theme('voipcall_play_beep');
+function voipcall_play_beep() {
+  print theme('voipcall_play_beep');
 }
 
-function theme_voipcall_play_beep(){
-   $filename = drupal_get_path('module', 'voipcall').'/sound/beep.mp3';
-   header('Content-Type: audio/mpeg');
-   return readfile($filename);
+function theme_voipcall_play_beep() {
+  $filename = drupal_get_path('module', 'voipcall') . '/sound/beep.mp3';
+  header('Content-Type: audio/mpeg');
+  return readfile($filename);
 }
 
 function voipcall_call_log() {
   $headers = array(
-  array('data' => t('cid'), 'field' => 'cid', 'sort' => 'desc'),
-  array('data' => t('start'), 'field' => 'start_time'),
-  array('data' => t('user'), 'field' => 'uid'),
-  array('data' => t('caller name'), 'field' => 'caller_name'),
-  array('data' => t('caller number'), 'field' => 'caller_name'),
-  array('data' => t('dest name'), 'field' => 'dest_name'),
-  array('data' => t('dest number'), 'field' => 'dest_number'),
-  array('data' => t('other'), 'field' => 'other'),
-  '');
-  $sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}".tablesort_sql($headers);
+    array(
+      'data' => t('cid'),
+      'field' => 'cid',
+      'sort' => 'desc',
+    ),
+    array(
+      'data' => t('start'),
+      'field' => 'start_time',
+    ),
+    array(
+      'data' => t('user'),
+      'field' => 'uid',
+    ),
+    array(
+      'data' => t('caller name'),
+      'field' => 'caller_name',
+    ),
+    array(
+      'data' => t('caller number'),
+      'field' => 'caller_name',
+    ),
+    array(
+      'data' => t('dest name'),
+      'field' => 'dest_name',
+    ),
+    array(
+      'data' => t('dest number'),
+      'field' => 'dest_number',
+    ),
+    array(
+      'data' => t('other'),
+      'field' => 'other',
+    ),
+    '',
+  );
+  $sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}" . tablesort_sql($headers);
   $limit = 50;
   $result = pager_query($sql, $limit);
-  
-  if($result){
+
+  if ($result) {
     //your basic while loop to get the data
-    while($tmp = db_fetch_array($result)) {
+    while ($tmp = db_fetch_array($result)) {
       $owner = user_load($tmp['uid']);
-      if(!$tmp['uid']) {
+      if (!$tmp['uid']) {
         $tmp['uid'] = t('Anonymous');
       }
       else {
-        $tmp['uid'] = l($owner->name,'user/'.$owner->name);
+        $tmp['uid'] = l($owner->name, 'user/' . $owner->name);
       }
       $tmp['start_time'] = format_date($tmp['start_time'], 'small');
-      
-      $tmp['other'] = l('See more','voipcall/'.$tmp['cid']);
+
+      $tmp['other'] = l('See more', 'voipcall/' . $tmp['cid']);
       $data[] = $tmp;
     }
   }
@@ -362,12 +388,12 @@ function voipcall_call_log() {
 }
 
 function voipcall_call_page($cid) {
-   $call_data = db_fetch_array(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
-   foreach($call_data as $label => $data){
-     $output.="<div><b>".$label.":</b> ".$data."</div>";
-   }
-   $output.=l("Go back","admin/voip/call/log");
-   return $output;
+  $call_data = db_fetch_array(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
+  foreach ($call_data as $label => $data) {
+    $output .= "<div><b>" . $label . ":</b> " . $data . "</div>";
+  }
+  $output .= l("Go back", "admin/voip/call/log");
+  return $output;
 }
 
 function voipcall_call_page_title($arg) {
@@ -376,24 +402,46 @@ function voipcall_call_page_title($arg) {
 
 function voipcall_session_log() {
   $headers = array(
-  array('data' => t('sid'), 'field' => 'sid', 'sort' => 'desc'),
-  array('data' => t('call_id'), 'field' => 'call_id'),
-  array('data' => t('origin_number'), 'field' => 'origin_number'),
-  array('data' => t('destination_number'), 'field' => 'destination_number'),
-  array('data' => t('expiration_time'), 'field' => 'expiration_time'),
-  array('data' => t('expiring_at'), 'field' => 'expiring_at'),
-  array('data' => t('delete'), 'field' => 'delete'),
+    array(
+      'data' => t('sid'),
+      'field' => 'sid',
+      'sort' => 'desc',
+    ),
+    array(
+      'data' => t('call_id'),
+      'field' => 'call_id',
+    ),
+    array(
+      'data' => t('origin_number'),
+      'field' => 'origin_number',
+    ),
+    array(
+      'data' => t('destination_number'),
+      'field' => 'destination_number',
+    ),
+    array(
+      'data' => t('expiration_time'),
+      'field' => 'expiration_time',
+    ),
+    array(
+      'data' => t('expiring_at'),
+      'field' => 'expiring_at',
+    ),
+    array(
+      'data' => t('delete'),
+      'field' => 'delete',
+    ),
   );
-  $sql = "SELECT * FROM {voipsession}".tablesort_sql($headers);
+  $sql = "SELECT * FROM {voipsession}" . tablesort_sql($headers);
   $limit = 50;
   $result = pager_query($sql, $limit);
-  
-  if($result){
+
+  if ($result) {
     //your basic while loop to get the data
-    while($tmp = db_fetch_array($result)) {
+    while ($tmp = db_fetch_array($result)) {
       $tmp['expiring_at'] = format_date($tmp['expiring_at'], 'small');
-      $tmp['call_id'] = l($tmp['call_id'],'voipcall/'.$tmp['call_id']);
-      $tmp['delete'] = l('Delete','voipsession/delete/'.$tmp['sid']);
+      $tmp['call_id'] = l($tmp['call_id'], 'voipcall/' . $tmp['call_id']);
+      $tmp['delete'] = l('Delete', 'voipsession/delete/' . $tmp['sid']);
       $data[] = $tmp;
     }
   }

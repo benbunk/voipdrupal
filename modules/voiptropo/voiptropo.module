@@ -29,28 +29,28 @@ function voiptropo_admin_form($configuration) {
     '#type' => 'textfield',
     '#title' => t('Tropo Username'),
     '#description' => t("Your Tropo username."),
-    '#default_value' => ($configuration['voiptropo_account_username']?$configuration['voiptropo_account_username']:''),
+    '#default_value' => ($configuration['voiptropo_account_username'] ? $configuration['voiptropo_account_username'] : ''),
   );
-  
+
   $form['voiptropo_account_password'] = array(
     '#type' => 'password',
     '#title' => t('Tropo Password'),
     '#description' => t("Your Tropo password."),
-    '#default_value' => ($configuration['voiptropo_account_password']?$configuration['voiptropo_account_password']:''),
+    '#default_value' => ($configuration['voiptropo_account_password'] ? $configuration['voiptropo_account_password'] : ''),
   );
 
   $form['voiptropo_voice_token'] = array(
     '#type' => 'textfield',
     '#title' => t('Voice Outbound Token'),
     '#description' => t("The Voice Outbound Token provided in your Tropo application settings."),
-    '#default_value' => ($configuration['voiptropo_voice_token']?$configuration['voiptropo_voice_token']:''),
+    '#default_value' => ($configuration['voiptropo_voice_token'] ? $configuration['voiptropo_voice_token'] : ''),
   );
-  
+
   $form['voiptropo_sms_token'] = array(
     '#type' => 'textfield',
     '#title' => t('Messaging Outbound Token'),
     '#description' => t("The Messaging Outbound Token provided in your Tropo application settings."),
-    '#default_value' => ($configuration['voiptropo_sms_token']?$configuration['voiptropo_sms_token']:''),
+    '#default_value' => ($configuration['voiptropo_sms_token'] ? $configuration['voiptropo_sms_token'] : ''),
   );
 
   $form['voipcall_voice_id'] = array(
@@ -60,7 +60,7 @@ function voiptropo_admin_form($configuration) {
     '#options' => VoipTropoServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
   );
-  
+
   $form['voipcall_man_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default man voice'),
@@ -68,7 +68,7 @@ function voiptropo_admin_form($configuration) {
     '#options' => VoipTropoServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
   );
-  
+
   $form['voipcall_woman_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default woman voice'),
@@ -86,7 +86,7 @@ function voiptropo_admin_form($configuration) {
 function voiptropo_admin_form_validate($form, &$form_state) {
 
   if (!$form_state['values']['voiptropo_account_password']) {
-    $old_settings=variable_get('voip_tropo_settings', '');
+    $old_settings = variable_get('voip_tropo_settings', '');
     $form_state['values']['voiptropo_account_password'] = $old_settings['voiptropo_account_password'];
   }
   // Send a test request to validate the configuration of the Tropo server
@@ -108,18 +108,18 @@ function voiptropo_menu() {
   $items['voip/tropo/callhandler'] = array(
     'title' => 'Voip Tropo call handler',
     'description' => 'Handles incoming calls from Tropo.',
-      // Note: Since both incoming calls and Tropo responses are received
-      // via the same callhandler menu, the specific call permissions are to 
-      // be checked inside the call handler function itself.
-    'access callback' => TRUE, 
+    // Note: Since both incoming calls and Tropo responses are received
+    // via the same callhandler menu, the specific call permissions are to
+    // be checked inside the call handler function itself.
+    'access callback' => TRUE,
     'page callback' => '_voiptropo_call_handler',
     'type' => MENU_CALLBACK,
   );
-  
+
   $items['voip/tropo/grammar/numeric_star_hash'] = array(
     'title' => 'Grammar script',
     'description' => 'Grammar script allowing the keypad input of digits, star and hash',
-    'access callback' => TRUE, 
+    'access callback' => TRUE,
     'page callback' => '_voiptropo_grammar_numeric_star_hash',
     'page arguments' => array(4),
     'type' => MENU_CALLBACK,
@@ -128,11 +128,11 @@ function voiptropo_menu() {
 }
 
 /*Generate GrXML grammar which allows digits with star and hash keys*/
-function _voiptropo_grammar_numeric_star_hash($num_digits=1) {
-$grxml = '<?xml version="1.0" encoding="UTF-8"?>
-<grammar xmlns="http://www.w3.org/2001/06/grammar" xml:lang="en-US" root="myRule">  
+function _voiptropo_grammar_numeric_star_hash($num_digits = 1) {
+  $grxml = '<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://www.w3.org/2001/06/grammar" xml:lang="en-US" root="myRule">
   <rule id="myRule" scope="public">
-    <item repeat="1-'. $num_digits .'">
+    <item repeat="1-' . $num_digits . '">
       <ruleref uri="#digits" />
     </item>
   </rule>
@@ -151,7 +151,7 @@ $grxml = '<?xml version="1.0" encoding="UTF-8"?>
       <item>8</item>
       <item>9</item>
     </one-of>
-  </rule> 
+  </rule>
 </grammar>';
 
   print $grxml;
@@ -164,42 +164,42 @@ function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
 
   $script = NULL;
   switch ($script_name) {
-    case 'voiptropo_speech_recognition_demo': 
+    case 'voiptropo_speech_recognition_demo':
       $script = new VoipTropoScript('voiptropo_speech_recognition_demo');
-      $script->addLabel('start');  
-      $choices='sales, support, billing';
+      $script->addLabel('start');
+      $choices = 'sales, support, billing';
       $mode = 'speech';
-	  $recognize_as = 'es-es';
+      $recognize_as = 'es-es';
       $prompt = t('Please choose the department. Options are sales, support and billing.');
       $timeout = 5;
       $end_key = '';
       $script->addGetVoiceInput($prompt, $choices, $mode, $recognize_as, $end_key, $timeout);
       $script->addSet('speech', '%input_digits');
-      
+
       // If timeout or invalid input
       $script->addGotoIf('invalid', "^%input_digits == ''");
       // Else:
       $script->addGotoIf('speak', "^%input_digits != ''");
-      
-      $script->addLabel('speak'); 
+
+      $script->addLabel('speak');
       $script->addSay('You said %speech');
       $script->addGoto('end');
-      
-      $script->addLabel('invalid');  
+
+      $script->addLabel('invalid');
       $script->addSay('Invalid option choosed');
-      
-      $script->addLabel('end');  
+
+      $script->addLabel('end');
       $script->addSay('Goodbye');
-      $script->addHangup();    
+      $script->addHangup();
       break;
 
-    case 'voiptropo_IM_demo': 
+    case 'voiptropo_IM_demo':
       $script = new VoipTropoScript('voiptropo_IM_demo');
-      $text="testing";
-      $to="my_IM_address@hotmail.com";
-      $channel="MSN";
+      $text = "testing";
+      $to = "my_IM_address@hotmail.com";
+      $channel = "MSN";
       $script->addSendText($text, $to, $channel);
-      $script->addHangup();    
+      $script->addHangup();
       break;
   }
 
@@ -215,16 +215,16 @@ function voiptropo_voipscript_get_script_names() {
   return $script_names;
 }
 function json_serialize($any) {
-return json_encode(json_wrap($any));
+  return json_encode(json_wrap($any));
 }
 function json_wrap($any, $skipAssoc = false) {
   if (!$skipAssoc && is_array($any) && is_string(key($any))) {
-    return (object)array("_PHP_ASSOC" => json_wrap($any,true));
+    return (object) array("_PHP_ASSOC" => json_wrap($any, true));
   }
   if (is_array($any) || is_object($any)) {
-  foreach ($any as &$v) {
-  $v = json_wrap($v);
-  }
+    foreach ($any as &$v) {
+      $v = json_wrap($v);
+    }
   }
   return $any;
 }
@@ -232,43 +232,43 @@ function json_wrap($any, $skipAssoc = false) {
 /**
  * Implements hook_getvoices().
  */
-function voiptropo_getvoices($language , $gender, $is_local){
-  if(variable_get('voip_default_server', 'log') != 'tropo') {
+function voiptropo_getvoices($language, $gender, $is_local) {
+  if (variable_get('voip_default_server', 'log') != 'tropo') {
     //Return if this VoIP Server is not set as default
     return array();
   }
-  
-  if($is_local === TRUE) {
+
+  if ($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }
-  
+
   $voices = VoipTropoServer::_get_available_voices();
-    //Search
-    foreach($voices as $key => $voice) {
-    if($language && $gender) {
+  //Search
+  foreach ($voices as $key => $voice) {
+    if ($language && $gender) {
       //Search by language and gender
-      if($voice['language'] == $language && $voice['voice'] == $gender) {
+      if ($voice['language'] == $language && $voice['voice'] == $gender) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
-    else if($language) {
-       //Search by language
-      if($voice['language'] == $language ) {
+    else if ($language) {
+      //Search by language
+      if ($voice['language'] == $language ) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
-    else if($gender) {
-       //Search by gender
-      if($voice['voice'] == $gender ) {
+    else if ($gender) {
+      //Search by gender
+      if ($voice['voice'] == $gender ) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
     else {
       $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
     }
-    
+
   }
- 
+
   return $voipvoices;
 }

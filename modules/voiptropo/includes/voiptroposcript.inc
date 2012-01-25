@@ -8,21 +8,21 @@
 
 
 class VoipTropoScript extends VoipScript {
-  
+
   /**
    * Constructs a new instance of the VoipTropoScript class
    */
-  function __construct($name, $variables=array()) {
+  function __construct($name, $variables = array()) {
     parent::__construct($name, $variables);
   }
-  
+
   /**
    * Adds a "get voice input" command to the script.
    *
    * When executed, the 'get voice input' command prompts the user for an input
    * and waits for a response via speech or touch-tone keypad.
    *
-   * @param $prompt 
+   * @param $prompt
    *   Mixed. Can be any of the following
    *   - an executable string to be processed into a prompt string, a
    *     VoipPrompt instance, or an array of VoipPrompt instances
@@ -31,18 +31,18 @@ class VoipTropoScript extends VoipScript {
    *   - a VoipPrompt instance
    *   - an array of VoipPrompt instances to be processed
    *
-   * @param $choices 
+   * @param $choices
    *   String with a Simple Grammar text that tells Tropo what to expect from
    *   the user. For additional information, please check:
    *        https://www.tropo.com/docs/scripting/simple_grammar.htm
    *
-   * @param $mode 
+   * @param $mode
    *   String. Defines which input mode Tropo should listen for. Possible values
    *   are 'keypad', 'speech' or 'any'.
    *
-   * @param $recognize_as 
+   * @param $recognize_as
    *   String. Tells Tropo what language to listen for. Examples include 'de-de'
-   *   for German, 'en-us' for US English, 'es-mx' for Mexican Spanish. For a  
+   *   for German, 'en-us' for US English, 'es-mx' for Mexican Spanish. For a
    *   complete list, check https://www.tropo.com/docs/webapi/ask.htm
    *
    * @param $timeout
@@ -58,10 +58,10 @@ class VoipTropoScript extends VoipScript {
    *
    * @return
    *   The 'get voice input' command sets the script variable 'input_digits' to
-   *   the input received.  In case nothing is typed or the input does not 
+   *   the input received.  In case nothing is typed or the input does not
    *   match $choices, then 'input_digits' gets set to ''
    */
-  function addGetVoiceInput($prompt, $choices, $mode='speech', $recognize_as='', $end_key='#' , $timeout=5) {
+  function addGetVoiceInput($prompt, $choices, $mode = 'speech', $recognize_as = '', $end_key = '#', $timeout = 5) {
     $params['prompt'] = $prompt;
     $params['choices'] = $choices;
     $params['mode'] = $mode;

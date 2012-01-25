@@ -27,26 +27,26 @@ function voipplivo_voipserver_info() {
 }
 
 function voipplivo_admin_form($configuration) {
-  
+
   $form['voipplivo_restapi_url'] = array(
     '#type' => 'textfield',
     '#title' => t('Plivo REST API Url'),
     '#description' => t("The URL of your Plivo installation. Change it only if its not installed on same server as your website."),
-    '#default_value' => ($configuration['voipplivo_restapi_url']?$configuration['voipplivo_restapi_url']:'http://127.0.0.1:8088'),
+    '#default_value' => ($configuration['voipplivo_restapi_url'] ? $configuration['voipplivo_restapi_url'] : 'http://127.0.0.1:8088'),
   );
-  
+
   $form['voipplivo_account_sid'] = array(
     '#type' => 'textfield',
     '#title' => t('Plivo Account SID'),
     '#description' => t("The account SID defined in your Plivo configuration."),
-    '#default_value' => ($configuration['voipplivo_account_sid']?$configuration['voipplivo_account_sid']:''),
+    '#default_value' => ($configuration['voipplivo_account_sid'] ? $configuration['voipplivo_account_sid'] : ''),
   );
 
   $form['voipplivo_auth_token'] = array(
     '#type' => 'textfield',
     '#title' => t('Plivo Auth Token'),
     '#description' => t("The authorization token defined in your Plivo configuration."),
-    '#default_value' => ($configuration['voipplivo_auth_token']?$configuration['voipplivo_auth_token']:''),
+    '#default_value' => ($configuration['voipplivo_auth_token'] ? $configuration['voipplivo_auth_token'] : ''),
   );
 
   $form['voipcall_voice_id'] = array(
@@ -56,7 +56,7 @@ function voipplivo_admin_form($configuration) {
     '#options' => VoipPlivoServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
   );
-  
+
   $form['voipcall_man_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default man voice'),
@@ -64,7 +64,7 @@ function voipplivo_admin_form($configuration) {
     '#options' => VoipPlivoServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
   );
-  
+
   $form['voipcall_woman_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default woman voice'),
@@ -72,40 +72,40 @@ function voipplivo_admin_form($configuration) {
     '#options' => VoipPlivoServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
   );
-  
+
   $form['voipplivo_config_outbound_call'] = array(
-	'#type' => 'fieldset',
-	'#title' => t('Plivo Outbound Call Parameters'),
-	'#collapsible' => TRUE,
-	'#collapsed' => TRUE
+    '#type' => 'fieldset',
+    '#title' => t('Plivo Outbound Call Parameters'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
-    
+
   $form['voipplivo_config_outbound_call']['voipplivo_call_gateways'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateways'),
     '#description' => t("This should be valid FreeSWITCH gateway strings separated by comma. If multiple gateways are specified, all the gateways will be tried sequentially for failover for the specified number of retries. E.g. 'user/,sofia/gateway/PSTNgateway1/,sofia/gateway/PSTNgateway2/'."),
-    '#default_value' => ($configuration['voipplivo_call_gateways']?$configuration['voipplivo_call_gateways']:'user/'),
+    '#default_value' => ($configuration['voipplivo_call_gateways'] ? $configuration['voipplivo_call_gateways'] : 'user/'),
   );
-  
+
   $form['voipplivo_config_outbound_call']['voipplivo_call_gateway_codec'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateway Codecs'),
     '#description' => t("Through this parameter you can choose the valid codec(s) to be used for each FreeSWITCH gateway. E.g.'PCMA,PCMU','G729,PCMU','PCMA,G729'."),
-    '#default_value' => ($configuration['voipplivo_call_gateway_codec']?$configuration['voipplivo_call_gateway_codec']:"'PCMA,PCMU'"),
-  );	
-	
+    '#default_value' => ($configuration['voipplivo_call_gateway_codec'] ? $configuration['voipplivo_call_gateway_codec'] : "'PCMA,PCMU'"),
+  );
+
   $form['voipplivo_config_outbound_call']['voipplivo_call_gateway_timeouts'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateway Timeouts'),
     '#description' => t("gatewayTimeouts indicates the timeouts (in seconds) for each FreeSWITCH gateway. E.g 10,10,10. Here Plivo will use 10 seconds timeouts while trying to dial a call through each of the three gateways."),
-    '#default_value' => ($configuration['voipplivo_call_gateway_timeouts']?$configuration['voipplivo_call_gateway_timeouts']:'60'),
-  );	
-	
+    '#default_value' => ($configuration['voipplivo_call_gateway_timeouts'] ? $configuration['voipplivo_call_gateway_timeouts'] : '60'),
+  );
+
   $form['voipplivo_config_outbound_call']['voipplivo_call_gateway_retries'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateway Retries'),
     '#description' => t("The number of times each of the gateways must be tried."),
-    '#default_value' => ($configuration['voipplivo_call_gateway_retries']?$configuration['voipplivo_call_gateway_retries']:'1'),
+    '#default_value' => ($configuration['voipplivo_call_gateway_retries'] ? $configuration['voipplivo_call_gateway_retries'] : '1'),
   );
 
   return $form;
@@ -120,7 +120,7 @@ function voipplivo_admin_form_validate($form, &$form_state) {
   $values = $form_state['values'];
   $result = VoipPlivoServer::ping($values);
 
-  if(voip_error()){
+  if (voip_error()) {
     form_set_error('', t('A Plivo-related error occurred: @error', array('@error' => voip_error_message())));
   }
 }
@@ -134,10 +134,10 @@ function voipplivo_menu() {
   $items['voip/plivo/callhandler'] = array(
     'title' => 'VoIP Plivo call handler',
     'description' => 'Handles incoming calls from Plivo.',
-      // Note: Since both incoming calls and Plivo responses are received
-      // via the same callhandler menu, the specific call permissions are to 
-      // be checked inside the call handler function itself.
-    'access callback' => TRUE, 
+    // Note: Since both incoming calls and Plivo responses are received
+    // via the same callhandler menu, the specific call permissions are to
+    // be checked inside the call handler function itself.
+    'access callback' => TRUE,
     'page callback' => '_voipplivo_call_handler',
     'type' => MENU_CALLBACK,
   );
@@ -150,35 +150,35 @@ function voipplivo_menu() {
 /**
  * Implements hook_getvoices().
  */
-function voipplivo_getvoices($language , $gender, $is_local) {
+function voipplivo_getvoices($language, $gender, $is_local) {
 
-  if(variable_get('voip_default_server', 'log') != 'plivo') {
+  if (variable_get('voip_default_server', 'log') != 'plivo') {
     //Return if this VoIP Server is not set as default
     return array();
   }
-  if($is_local === TRUE) {
+  if ($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }
-  
+
   $voices = VoipPlivoServer::_get_available_voices();
-    //Search
-    foreach($voices as $key => $voice) {
-    if($language && $gender) {
+  //Search
+  foreach ($voices as $key => $voice) {
+    if ($language && $gender) {
       //Search by language and gender
-      if($voice['language'] == $language && $voice['voice'] == $gender) {
+      if ($voice['language'] == $language && $voice['voice'] == $gender) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
-    else if($language) {
-       //Search by language
-      if($voice['language'] == $language ) {
+    else if ($language) {
+      //Search by language
+      if ($voice['language'] == $language ) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
-    else if($gender) {
-       //Search by gender
-      if($voice['voice'] == $gender ) {
+    else if ($gender) {
+      //Search by gender
+      if ($voice['voice'] == $gender ) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
@@ -186,6 +186,6 @@ function voipplivo_getvoices($language , $gender, $is_local) {
       $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
     }
   }
- 
+
   return $voipvoices;
 }

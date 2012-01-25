@@ -31,37 +31,37 @@ function voiptwilio_admin_form($configuration) {
     '#type' => 'textfield',
     '#title' => t('Twilio Account SID'),
     '#description' => t("The account SID provided in your Twilio account dashboard."),
-    '#default_value' => ($configuration['voiptwilio_account_sid']?$configuration['voiptwilio_account_sid']:''),
+    '#default_value' => ($configuration['voiptwilio_account_sid'] ? $configuration['voiptwilio_account_sid'] : ''),
   );
 
   $form['voiptwilio_auth_token'] = array(
     '#type' => 'textfield',
     '#title' => t('Twilio Auth Token'),
     '#description' => t("The authorization token provided in your Twilio account dashboard."),
-    '#default_value' => ($configuration['voiptwilio_auth_token']?$configuration['voiptwilio_auth_token']:''),
+    '#default_value' => ($configuration['voiptwilio_auth_token'] ? $configuration['voiptwilio_auth_token'] : ''),
   );
 
   $form['voipcall_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
     '#description' => t('Voice to be used in automatic text-to-speech generation.'),
-    '#options' =>  VoipTwilioServer::getVoicesList(),
+    '#options' => VoipTwilioServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
   );
-  
+
   $form['voipcall_man_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default man voice'),
     '#description' => t('Man voice to be used in automatic text-to-speech generation.'),
-    '#options' =>  VoipTwilioServer::getVoicesList(),
+    '#options' => VoipTwilioServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
   );
-  
+
   $form['voipcall_woman_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default woman voice'),
     '#description' => t('Woman voice to be used in automatic text-to-speech generation.'),
-    '#options' =>  VoipTwilioServer::getVoicesList(),
+    '#options' => VoipTwilioServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
   );
 
@@ -77,7 +77,7 @@ function voiptwilio_admin_form_validate($form, &$form_state) {
   $values = $form_state['values'];
   $result = VoipTwilioServer::ping($values);
 
-  if(voip_error()){
+  if (voip_error()) {
     form_set_error('', t('A Twilio-related error occurred: @error', array('@error' => voip_error_message())));
   }
 }
@@ -91,10 +91,10 @@ function voiptwilio_menu() {
   $items['voip/twilio/callhandler'] = array(
     'title' => 'VoIP Twilio call handler',
     'description' => 'Handles incoming calls from Twilio.',
-      // Note: Since both incoming calls and Twilio responses are received
-      // via the same callhandler menu, the specific call permissions are to 
-      // be checked inside the call handler function itself.
-    'access callback' => TRUE, 
+    // Note: Since both incoming calls and Twilio responses are received
+    // via the same callhandler menu, the specific call permissions are to
+    // be checked inside the call handler function itself.
+    'access callback' => TRUE,
     'page callback' => '_voiptwilio_call_handler',
     'type' => MENU_CALLBACK,
   );
@@ -105,35 +105,35 @@ function voiptwilio_menu() {
 /**
  * Implements hook_getvoices().
  */
-function voiptwilio_getvoices($language , $gender, $is_local) {
+function voiptwilio_getvoices($language, $gender, $is_local) {
 
-  if(variable_get('voip_default_server', 'log') != 'twilio') {
+  if (variable_get('voip_default_server', 'log') != 'twilio') {
     //Return if this VoIP Server is not set as default
     return array();
   }
-  if($is_local === TRUE) {
+  if ($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }
-  
+
   $voices = VoipTwilioServer::_get_available_voices();
-    //Search
-    foreach($voices as $key => $voice) {
-    if($language && $gender) {
+  //Search
+  foreach ($voices as $key => $voice) {
+    if ($language && $gender) {
       //Search by language and gender
-      if($voice['language'] == $language && $voice['voice'] == $gender) {
+      if ($voice['language'] == $language && $voice['voice'] == $gender) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
-    else if($language) {
-       //Search by language
-      if($voice['language'] == $language ) {
+    else if ($language) {
+      //Search by language
+      if ($voice['language'] == $language ) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
-    else if($gender) {
-       //Search by gender
-      if($voice['voice'] == $gender ) {
+    else if ($gender) {
+      //Search by gender
+      if ($voice['voice'] == $gender ) {
         $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }

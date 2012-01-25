@@ -12,13 +12,13 @@
  * Class definitions
  */
 
-        
+
 /*
- * Class that keeps track of both the commands as well as the current status of 
+ * Class that keeps track of both the commands as well as the current status of
  * a VoIP Drupal Script
  */
 class VoipScript {
-  
+
   // Script variables
 
   /**
@@ -29,7 +29,7 @@ class VoipScript {
   /**
    * Array of script commands
    */
-  private $commands; 
+  private $commands;
 
   /**
    * Index of the next command to be executed
@@ -72,37 +72,37 @@ class VoipScript {
   /**
    * Error code
    */
-//TODO: do we really need this constant?
-  const ERROR='processing_error';
+  //TODO: do we really need this constant?
+  const ERROR = 'processing_error';
 
   /**
    * Values associated with the dial command results
    */
-  const DIAL_COMPLETED='dial_completed';
-  const DIAL_BUSY='dial_busy';
-  const DIAL_NO_ANSWER='dial_no_answer';
-  const DIAL_FAILED='dial_failed';
-  const DIAL_CANCELED='dial_canceled';
- 
+  const DIAL_COMPLETED = 'dial_completed';
+  const DIAL_BUSY = 'dial_busy';
+  const DIAL_NO_ANSWER = 'dial_no_answer';
+  const DIAL_FAILED = 'dial_failed';
+  const DIAL_CANCELED = 'dial_canceled';
+
 
   /**
    * 'Reject' command options
    */
-  const REJECT_INVALID='reject_invalid';
-  const REJECT_BUSY='reject_busy';
+  const REJECT_INVALID = 'reject_invalid';
+  const REJECT_BUSY = 'reject_busy';
 
   /**
    * VoipScript constructor
    *
-   * @param $name 
+   * @param $name
    *   A string containing the name of the new script
-   * @param $variables 
+   * @param $variables
    *   An array with the initial value of the script variables
    *
    * @return
    *  The new script created
    */
-  function __construct($name, $variables=array()) {
+  function __construct($name, $variables = array()) {
     $this->name = $name;
     $this->commands = array();
     $this->index = 0;
@@ -112,7 +112,7 @@ class VoipScript {
     $this->error_message = NULL;
   }
 
-   /**
+  /**
    * Returns the name of all the scripts available in the system
    *
    * @return
@@ -122,15 +122,17 @@ class VoipScript {
     $script_names = array();
     // Invoke hook_voipscript_get_script_names()
     foreach (module_implements('voipscript_get_script_names') as $module) {
-      $function = $module .'_'. 'voipscript_get_script_names';
+      $function = $module . '_' . 'voipscript_get_script_names';
       $new_names = call_user_func($function);
-      if(isset($new_names)) {
+      if (isset($new_names)) {
         // include new script names
         $script_names = array_merge($script_names, $new_names);
       }
     }
     sort($script_names);
-    foreach($script_names as $k => $v) $sorted_names[$v] = $v;
+    foreach ($script_names as $k => $v) {
+      $sorted_names[$v] = $v;
+    }
     return $sorted_names;
   }
 
@@ -147,16 +149,16 @@ class VoipScript {
    * @return
    *   The new script instance, or NULL in case of invalid script name
    */
-  public static function loadScript($script_name, $params = NULL){
+  public static function loadScript($script_name, $params = NULL) {
     $rc = NULL;
     $script_tmp = new VoipScript($script_name);
     $script_tmp->runLoad($script_name, $params);
-    if(!$script_tmp->isError()) {
+    if (!$script_tmp->isError()) {
       $rc = $script_tmp;
     }
     return $rc;
   }
-        
+
 
   /*
    * Public methods
@@ -220,10 +222,10 @@ class VoipScript {
   function getVoice() {
     return VoipVoice::getVoice($this->voice_id)->getVoiceId();
     /*$voice_id = $this->voice_id;
-    if(!$voice_id) {
-      $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
-    }
-    return $voice_id;*/
+     if(!$voice_id) {
+     $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
+     }
+     return $voice_id;*/
   }
 
 
@@ -253,18 +255,18 @@ class VoipScript {
    * @param $string
    *   The string (or array of strings) to be evaluated
    *
-   * @return 
+   * @return
    *   The result of the evaluation
    *
-   * @see _voipscript_expand_variables() for the actual syntax allowed in the 
+   * @see _voipscript_expand_variables() for the actual syntax allowed in the
    *   string to be evaluated
    */
   function evalString($string) {
-    if(!is_array($string)) {
+    if (!is_array($string)) {
       $rc = _voipscript_expand_variables($string, $this->variables);
     }
     else {
-      foreach($string as $index => $str) {
+      foreach ($string as $index => $str) {
         $rc[$index] = _voipscript_expand_variables($str, $this->variables);
       }
     }
@@ -274,7 +276,7 @@ class VoipScript {
   /**
    * Returns TRUE in case a script processing error has been detected
    */
-  function isError(){
+  function isError() {
     return $this->is_error;
   }
 
@@ -338,7 +340,7 @@ class VoipScript {
    *   If the call was successful, the variable dial_duration gets set with the
    *   number of seconds that the call lasted for.
    */
-  function addDial($number='', $timeout=30, $hangup_on_star=false, $time_limit=3600, $caller_id=''){
+  function addDial($number = '', $timeout = 30, $hangup_on_star = false, $time_limit = 3600, $caller_id = '') {
     $params['number'] = $number;
     $params['timeout'] = $timeout;
     $params['hangup_on_star'] = $hangup_on_star;
@@ -346,16 +348,16 @@ class VoipScript {
     $params['caller_id'] = $caller_id;
     $this->commands[] = new VoipCommand('VoipCmdDial', $params);
   }
-  
+
   /**
-   * Adds a 'get input' command to the script. 
+   * Adds a 'get input' command to the script.
    *
    * When executed, the 'get input' command reads user input from the phone
    * keypad. The system stops reading the input whenever there is a
    * timeout, the user presses a predefined key, or the users presses the
    * maximum number of digits expected.
    *
-   * @param $prompt 
+   * @param $prompt
    *   Mixed. Can be any of the following
    *   - an executable string to be processed into a prompt string, a
    *     VoipPrompt instance, or an array of VoipPrompt instances
@@ -379,7 +381,7 @@ class VoipScript {
    *   The 'get input' command sets the script variable input_digits to the
    *   input received.  In case nothing is typed, input_digits gets set to ''
    */
-  function addGetInput($prompt='', $num_digits=NULL, $end_key='#', $timeout=5) {
+  function addGetInput($prompt = '', $num_digits = NULL, $end_key = '#', $timeout = 5) {
     $params['prompt'] = $prompt;
     $params['num_digits'] = $num_digits;
     $params['end_key'] = $end_key;
@@ -393,7 +395,7 @@ class VoipScript {
    * When executed, the 'gosub' command saves the state of the current script
    * into the local stack and loads the commands and variables of specified
    * script.
-   * 
+   *
    * @param $script_name
    *   The name of the script to be loaded
    *
@@ -403,15 +405,15 @@ class VoipScript {
    *
    * @see VoipScript::addReturn()
    */
-  function addGosub($script_name, $options=array()) {
+  function addGosub($script_name, $options = array()) {
     $params['script_name'] = $script_name;
     $params['options'] = $options;
     $this->commands[] = new VoipCommand('VoipCmdGosub', $params);
   }
 
-  /** 
+  /**
    * Adds a "go to" command to the script.
-   * 
+   *
    * When ran, the 'go to' command updates the index of the script and skips
    * the script execution to the command that follows the specified label.
    *
@@ -420,7 +422,7 @@ class VoipScript {
    *
    * @see VoipScript::addLabel()
    * @see VoipScript::addGotoIf()
-   */ 
+   */
   function addGoto($label_name) {
     $params['label_name'] = $label_name;
     $this->commands[] = new VoipCommand('VoipCmdGoto', $params);
@@ -452,12 +454,12 @@ class VoipScript {
    *  @param $hangup_mode
    *  String with one of the following options:
    *  - "end_session", to end the session and leave the script index as is
-   *  - "reset", to keep the session alive, but resetting both the stack and 
+   *  - "reset", to keep the session alive, but resetting both the stack and
    *    the command index to their initial values
-   *  - "resume", to keep the session alive, maintaining both the stack and 
+   *  - "resume", to keep the session alive, maintaining both the stack and
    *   the command index with their present values
    */
-  function addHangup($hangup_mode='end_session') {
+  function addHangup($hangup_mode = 'end_session') {
     $params['hangup_mode'] = $hangup_mode;
     $this->commands[] = new VoipCommand('VoipCmdHangup', $params);
   }
@@ -468,7 +470,7 @@ class VoipScript {
    * When executed, the 'join conference' command connects the current call
    * to the specified conference room.
    *
-   * @param $room 
+   * @param $room
    *   String with the name of the conference call room
    *
    * @param $muted
@@ -484,7 +486,7 @@ class VoipScript {
    *   - VoipScript::DIAL_FAILED
    *
    */
-  function addJoinConference($room, $muted=FALSE, $hangup_on_star=true) {
+  function addJoinConference($room, $muted = FALSE, $hangup_on_star = true) {
     $params['room'] = $room;
     $params['muted'] = $muted;
     $params['hangup_on_star'] = $hangup_on_star;
@@ -505,7 +507,7 @@ class VoipScript {
   /**
    * Adds a log command to the script.
    */
-  function addLog($input, $name=NULL) {
+  function addLog($input, $name = NULL) {
     $params['input'] = $input;
     $params['name'] = $name;
     $this->commands[] = new VoipCommand('VoipCmdLog', $params);
@@ -513,8 +515,8 @@ class VoipScript {
 
   /**
    * Adds a "run IVR menu" command to the script
-   * 
-   * When executed, the "run IVR menu" command presents the user with a set of 
+   *
+   * When executed, the "run IVR menu" command presents the user with a set of
    * options and expects for an input to be typed in.
    *
    * @param $prompt
@@ -536,26 +538,26 @@ class VoipScript {
    *   'story_playback' label of the script.
    *   By default, $input_options is set to the following:
    *     $input_options = Array (
-   *       0 => 'option_0', 
-   *       1 => 'option_1', 
-   *       2 => 'option_2', 
-   *       3 => 'option_3', 
-   *       4 => 'option_4', 
-   *       5 => 'option_5', 
-   *       '*' => 'option_star', 
-   *       '#' => 'option_hash', 
-   *       't' => 'no_input_received', // used to report timeout situations 
+   *       0 => 'option_0',
+   *       1 => 'option_1',
+   *       2 => 'option_2',
+   *       3 => 'option_3',
+   *       4 => 'option_4',
+   *       5 => 'option_5',
+   *       '*' => 'option_star',
+   *       '#' => 'option_hash',
+   *       't' => 'no_input_received', // used to report timeout situations
    *       'i' => 'invalid_option'
-   *     ) 
+   *     )
    *   If the option 't' is not provided, it will be set to 'no_input_received'
    *   by default. Similarly, by default 'i' will be set to 'invalid_option'.
-   *     
+   *
    * @param input $invalid_msg
    *   Mixed. The message to be played in case an invalid option is
    *   selected. If empty (''), the default message will be used: 'Invalid
    *   option selected.' Similar to the $prompt parameter, might be either a
    *   string, a VoipPrompt instance, or an array of VoipPrompt instances.
-   * 
+   *
    * @param %no_input_msg
    *   Mixed. The message to be played in case no input is received. If
    *   empty, will use the same message as $invalid_msg. Similar to the $prompt
@@ -564,7 +566,7 @@ class VoipScript {
    *
    * @param $max_attempts
    *   String with the maximum number of attempts allowed.  Default is 3.
-   * 
+   *
    * @param $timeout
    *   String with the number of seconds to wait for an input digit to be
    *   pressed. The default is 5
@@ -573,21 +575,21 @@ class VoipScript {
    *   Set the %ivr_option_selected script variable with the label associated
    *   with the option selected.
    */
-  function addRunIvrMenu($prompt='', $input_options=NULL, $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
+  function addRunIvrMenu($prompt = '', $input_options = NULL, $invalid_msg = '', $no_input_msg = '', $max_attempts = 3, $timeout = 5) {
     $default_prompt = t('Press any key from the telephone keypad.');
     $prompt = $prompt ? $prompt : $default_prompt;
     $params['prompt'] = $prompt;
-    $default_input_options = Array (
-      0 => 'option_0', 
-      1 => 'option_1', 
-      2 => 'option_2', 
-      3 => 'option_3', 
-      4 => 'option_4', 
-      5 => 'option_5', 
-      '*' => 'option_star', 
-      '#' => 'option_hash', 
-      't' => 'no_input_received', // used to report timeout situations 
-      'i' => 'invalid_option'
+    $default_input_options = array(
+      0 => 'option_0',
+      1 => 'option_1',
+      2 => 'option_2',
+      3 => 'option_3',
+      4 => 'option_4',
+      5 => 'option_5',
+      '*' => 'option_star',
+      '#' => 'option_hash',
+      't' => 'no_input_received', // used to report timeout situations
+      'i' => 'invalid_option',
     );
     $input_options = $input_options ? $input_options : $default_input_options;
     $input_options['t'] = $input_options['t']
@@ -613,7 +615,7 @@ class VoipScript {
    * the predefined 'end' key, or the maximum length of the recording is
    * reached.
    *
-   * @param $prompt 
+   * @param $prompt
    *   Mixed. Can be any of the following
    *   - an executable string to be processed into a prompt string, a
    *     VoipPrompt instance, or an array of VoipPrompt instances
@@ -643,7 +645,7 @@ class VoipScript {
    *
    * @return
    *   The execution of the 'record' command sets the following script
-   *   variables: 
+   *   variables:
    *   - recording_path, with the local location of the file recorded
    *   - recording_public_url, with the remote location of the file recorded if
    *     available, otherwise will store local location.
@@ -651,11 +653,11 @@ class VoipScript {
    *   - recording_digits, the key (if any) pressed to end the recording
    *   - recording_fid, with the fid of the file recorded
    *
-   *   NOTE: If the call is hang up in the middle of a recording, the variable 
-   *   "recording_digits" will be set to "hangup" and the other variables will 
+   *   NOTE: If the call is hang up in the middle of a recording, the variable
+   *   "recording_digits" will be set to "hangup" and the other variables will
    *   be set to their appropriate values.
    */
-  function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3', $play_beep=TRUE) {
+  function addRecord($prompt = '', $timeout = 5, $end_key = '#', $max_length = 3600, $format = 'mp3', $play_beep = TRUE) {
     $params['prompt'] = $prompt;
     $params['timeout'] = $timeout;
     $params['end_key'] = $end_key;
@@ -671,7 +673,7 @@ class VoipScript {
    * Rejects an incoming call without billing you. Has to be the first command
    * to be executed for an incoming call.
    */
-  function addReject($reason=VoipScript::REJECT_INVALID) {
+  function addReject($reason = VoipScript::REJECT_INVALID) {
     $params['reason'] = $reason;
     $this->commands[] = new VoipCommand('VoipCmdReject', $params);
   }
@@ -707,18 +709,18 @@ class VoipScript {
    * @return
    *   The execution of the 'say' command does not return anything.
    */
-  function addSay($prompt, $loop=1) {
+  function addSay($prompt, $loop = 1) {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
-  /** 
+  /**
    * Adds a "send text" command to the script.
-   * 
+   *
    * When ran, this command sends the given text message to the specified phone
-   * number. 
-   * 
+   * number.
+   *
    * @uses VoipScript::$variables
    *
    * @param $text
@@ -732,7 +734,7 @@ class VoipScript {
    *   defaults to the called party.
    *
    * @param $network
-   *   String with the network to be used. The default the network is 'sms'. 
+   *   String with the network to be used. The default the network is 'sms'.
    *   Different VoIP servers might support other options such as 'aim', 'msn',
    *   'jabber', 'yahoo', 'gtalk', etc.
    *
@@ -741,17 +743,17 @@ class VoipScript {
    *   a phone number, a IM username, etc. When sending on an inbound call,
    *   'caller_id' defaults to the called party.  When sending on an outbound
    *   call, 'caller id' defaults to the calling party.
-   * 
+   *
    * @return
    *   The execution of the 'send text' command sets the script variable
-   *   'send_text_status' 
+   *   'send_text_status'
    *   to any of the following values:
    *   - VoipCall::TEXT_FAILED
    *   - VoipCall::TEXT_INVALID
    *   - VoipCall::TEXT_SENDING
    *   - VoipCall::TEXT_SENT
-   */ 
-  function addSendText($text, $to='', $network='SMS', $caller_id=''){
+   */
+  function addSendText($text, $to = '', $network = 'SMS', $caller_id = '') {
     $params['to'] = $to;
     $params['text'] = $text;
     $params['network'] = $network;
@@ -772,14 +774,14 @@ class VoipScript {
    * Set the current language of the script
    */
   /*function addSetLanguage($language='en') {
-    $params['language'] = $language;
-    $this->commands[] = new VoipCommand('VoipCmdSetLanguage', $params);
-  }
-*/
+   $params['language'] = $language;
+   $this->commands[] = new VoipCommand('VoipCmdSetLanguage', $params);
+   }
+   */
   /**
    * Set the current voice of the script
    */
-  function addSetVoice($voice='man') {
+  function addSetVoice($voice = 'man') {
     $params['voice'] = $voice;
     $this->commands[] = new VoipCommand('VoipCmdSetVoice', $params);
   }
@@ -791,14 +793,14 @@ class VoipScript {
     $params['var_name'] = $var_name;
     $this->commands[] = new VoipCommand('VoipCmdUnset', $params);
   }
-  
+
   /**
    * Adds a 'wait' command to the script.
    *
    * @param $time_limit
    * Number of seconds the script should wait before moving to the next command
    */
-  function addWait($time_limit=60) {
+  function addWait($time_limit = 60) {
     $params['time_limit'] = $time_limit;
     $this->commands[] = new VoipCommand('VoipCmdWait', $params);
   }
@@ -812,10 +814,12 @@ class VoipScript {
   /**
    * Executes the specified script and then returns to the current script
    */
-  function runGosub($script_name, $options=NULL) {
-    $script_state = array('name' => $this->name,
-                          'commands' => $this->commands,
-                          'index' => $this->index);
+  function runGosub($script_name, $options = NULL) {
+    $script_state = array(
+      'name' => $this->name,
+      'commands' => $this->commands,
+      'index' => $this->index,
+    );
     $this->stack[] = $script_state;
     $rc =  $this->runLoad($script_name, $options);
     return $rc;
@@ -828,9 +832,9 @@ class VoipScript {
     $rc = TRUE;
     $found = FALSE;
     $i = 0;
-    while(!$found) {
+    while (!$found) {
       $cmd = $this->commands[$i];
-      if(!$cmd) {
+      if (!$cmd) {
         // label nor found
         $this->is_error = TRUE;
         $script_name = $this->name;
@@ -839,10 +843,10 @@ class VoipScript {
         $found = TRUE;
       }
       else {
-        if($cmd->getId() == 'VoipCmdLabel') {
+        if ($cmd->getId() == 'VoipCmdLabel') {
           $string_tmp = $cmd->getParam('label_name');
           $label_name_tmp = $this->evalString($string_tmp);
-          if(strcasecmp($label_name_tmp, $label_name) == 0) {
+          if (strcasecmp($label_name_tmp, $label_name) == 0) {
             $this->index = $i;
             $found = TRUE;
           }
@@ -868,21 +872,21 @@ class VoipScript {
    *
    * @param $script_name
    *  string, name of script to be loaded
-   * 
+   *
    * @param $params
-   *  array, optional parameters 
+   *  array, optional parameters
    *  to be passed to implementations of hook_voipscript_load_script
    */
   function runLoad($script_name, $params = NULL) {
     $rc = TRUE;
     $found = FALSE;
 
-    // Invoke hook_voipscript_load_script() giving modules the 
-    // opportunity to return a custom script. 
+    // Invoke hook_voipscript_load_script() giving modules the
+    // opportunity to return a custom script.
     foreach (module_implements('voipscript_load_script') as $module) {
-      $function = $module .'_'. 'voipscript_load_script';
+      $function = $module . '_' . 'voipscript_load_script';
       $new_script = call_user_func($function, $script_name, $params);
-      if(isset($new_script)) {
+      if (isset($new_script)) {
         $found = TRUE;
         // loads new name and commands
         $this->name = $new_script->getName();
@@ -891,14 +895,14 @@ class VoipScript {
         // override variables with the same name and preserve the others
         $this->variables = array_merge($this->variables, $new_script->getVariables());
         // preserve the stack as is
-          // $this->stack = array();
+        // $this->stack = array();
         $this->is_error = FALSE;
         // scripts must have unique names. exit the foreach
         break;
       }
     }
 
-    if(!$found) {
+    if (!$found) {
       // no script found with the given name
       $rc = FALSE;
       $this->is_error = TRUE;
@@ -906,14 +910,17 @@ class VoipScript {
     }
 
     return $rc;
-  } 
+  }
 
   /**
    * Logs the given message
    */
-  function runLog($input, $name=NULL) {
-    $options = array('@name' => $name, '@input' => $input);
-    if($name) {
+  function runLog($input, $name = NULL) {
+    $options = array(
+      '@name' => $name,
+      '@input' => $input,
+    );
+    if ($name) {
       $msg = "(log) @name :: @input";
     }
     else {
@@ -942,7 +949,7 @@ class VoipScript {
     }
     return $rc;
   }
-  
+
   /**
    * Returns the number of scripts in the stack.
    */
@@ -981,7 +988,7 @@ class VoipCommand {
   private $id; // command id
   private $params; // command parameters
 
-  function __construct($id, $params=array()) {
+  function __construct($id, $params = array()) {
     $this->id = $id;
     $this->params = $params;
   }
@@ -990,20 +997,20 @@ class VoipCommand {
     return $this->id;
   }
 
-  function getParam($param_name, $default=NULL) {
-    return $this->params[$param_name]?$this->params[$param_name]:$default;
+  function getParam($param_name, $default = NULL) {
+    return $this->params[$param_name] ? $this->params[$param_name] : $default;
   }
 }
-   
+
 
 class VoipPrompt {
 
   /**
-   * @variable $text 
+   * @variable $text
    *   String combining text and audio URLs to be played to the user
    */
   private $text;
-    
+
   /**
    * @variable $voice_id
    *   String with the id of voice to be used for the prompt.  If NULL, use
@@ -1019,7 +1026,7 @@ class VoipPrompt {
    */
   private $as;
 
-  function __construct($text, $voice_id=NULL, $as=NULL) {
+  function __construct($text, $voice_id = NULL, $as = NULL) {
     $this->text = $text;
     $this->voice_id = $voice_id;
     $this->as = $as;
@@ -1054,17 +1061,17 @@ class VoipPrompt {
   }
 
   static function encode($prompt) {
-    if(is_string($prompt)){
+    if (is_string($prompt)) {
       $prompt_list[] = new VoipPrompt($prompt);
     }
-    else if (is_object($prompt)){
+    else if (is_object($prompt)) {
       $prompt_list[] = $prompt;
     }
     else {
       $prompt_list = $prompt;
     }
-      
-    foreach($prompt_list as $p) {
+
+    foreach ($prompt_list as $p) {
       $to_encode[] = $p->to_array();
     }
     $encoded = json_encode($to_encode);
@@ -1073,14 +1080,14 @@ class VoipPrompt {
 
   static function decode($encoded) {
     $array_list = json_decode($encoded, true);
-    foreach($array_list as $a){
+    foreach ($array_list as $a) {
       $prompts[] = VoipPrompt::from_array($a);
     }
     return $prompts;
   }
 
 }
-    
+
 /**
  * Utility functions
  */
@@ -1104,7 +1111,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addSet('_invalid_msg', json_encode($options['invalid_msg']));
   $script->addSet('_no_input_msg', json_encode($options['no_input_msg']));
   $script->addSet('_timeout', $options['timeout']);
-  
+
   // run the script
 
   $script->addLabel('play_menu_options');
@@ -1112,18 +1119,18 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addGotoIf('go_back', '^%_counter < 0');
   $script->addGetInput("^VoipPrompt::decode(%_menu_options)", 1, '', '%_timeout');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
-/**
-  TODO: ideally, the correct line should be as follows
-  $script->addGotoIf('valid_option',
-                     "^strpos(' ' . '%_keys_allowed', '%input_digits')");
+  /**
+   TODO: ideally, the correct line should be as follows
+   $script->addGotoIf('valid_option',
+   "^strpos(' ' . '%_keys_allowed', '%input_digits')");
    however, since the eval function is not processing '0', '*', '#' correctly,
    I had to replace the line by the following. Hopefully, we'll be able to
    solve this little bug soon (2011.04.20)
    check http://stackoverflow.com/questions/3241070/php-recursive-variable-replacement
-   NOTE: among other things, the eval function adds single quotes around all 
-         non-numeric strings.  Since %_keys_allowed always includes 'ti',
-         we don't need to include single quotes when referring to it.
-**/
+   NOTE: among other things, the eval function adds single quotes around all
+   non-numeric strings.  Since %_keys_allowed always includes 'ti',
+   we don't need to include single quotes when referring to it.
+   **/
   $script->addGotoIf('valid_option',
                      "^(%input_digits === '0') ? strpos(' ' . %_keys_allowed, %input_digits) : FALSE");
   $script->addGotoIf('valid_option',
@@ -1135,22 +1142,22 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addGoto('invalid_option');
 
   $script->addLabel('no_input_received');
-  $script->addSet('ivr_option_selected', 
+  $script->addSet('ivr_option_selected',
               "^_voipscript_get_element('t', json_decode(%_input_options, TRUE))");
   $script->addSay('^json_decode(%_no_input_msg, TRUE)');
   $script->addGoto('play_menu_options');
-  
+
   $script->addLabel('valid_option');
   $script->addSet('ivr_option_selected',
       "^_voipscript_get_element(%input_digits, json_decode(%_input_options, TRUE))");
   $script->addGoto('go_back');
-  
+
   $script->addLabel('invalid_option');
   $script->addSet('ivr_option_selected',
               "^_voipscript_get_element('i', json_decode(%_input_options, TRUE))");
   $script->addSay("^json_decode(%_invalid_msg, TRUE)");
   $script->addGoto('play_menu_options');
-  
+
   $script->addLabel('go_back');
   $script->addUnset('_menu_options');
   $script->addUnset('_input_options');
@@ -1166,14 +1173,14 @@ function voipscript_get_run_ivr_menu_script($options) {
 
 function voipscript_use_sms_framework() {
   if (module_exists('sms') && variable_get('voipcall_use_sms_framework', 0) == 1) {
-   return TRUE;
+    return TRUE;
   }
   return FALSE;
 }
 
 function voipscript_send_sms_framework($to, $text) {
   //Use SMS Framework to send SMS message if user enabled this option
-  $to = str_replace('+','', $to);
+  $to = str_replace('+', '', $to);
   $res = sms_send($to, $text);
   watchdog('voipcall', "Sending SMS using SMS Framework. To=$to Text=$text Result=$res");
 }
@@ -1184,7 +1191,7 @@ function voipscript_send_sms_framework($to, $text) {
 
 /**
  * The following function recursively replaces predefined variables from
- * inside the given string.  It was based on code made available at 
+ * inside the given string.  It was based on code made available at
  * http://stackoverflow.com/questions/3241070/php-recursive-variable-replacement
  *
  * Notes:
@@ -1193,7 +1200,7 @@ function voipscript_send_sms_framework($to, $text) {
  * - This function is smart enough to process variables referenced by
  *   other variables
  * - There is no check against circular inclusion, which might simply lead
- *   to an infinite loop. (Example: $vars['s'] = '%s'; ..) 
+ *   to an infinite loop. (Example: $vars['s'] = '%s'; ..)
  * - When defining expressions that include string variables, make sure the
  *   variable placeholder is enclosed in " or '.  For instance,
  *     Correct form:   "^print_r('The content is ' . '%msg');"
@@ -1205,14 +1212,14 @@ function voipscript_send_sms_framework($to, $text) {
 function _voipscript_expand_variables($str, $vars) {
   $eval = substr($str, 0, 1) == '^';
   $regex = '/\%(\w+)/e';
-  $replacement = "_voipscript_replace_variable(\$1, \$vars, \$eval);" ;
-  $res = preg_replace($regex, $replacement ,$str);
-  if($eval) {
+  $replacement = "_voipscript_replace_variable(\$1, \$vars, \$eval);";
+  $res = preg_replace($regex, $replacement, $str);
+  if ($eval) {
     ob_start();
     $expr = substr($res, 1);
-    if(eval('$res = ' . $expr . ';')===false) {
+    if (eval('$res = ' . $expr . ';') === false) {
       ob_end_clean();
-        watchdog('voipscript', 'Invalid PHP expression: @expr', array('@expr' => $expr), WATCHDOG_ERROR);
+      watchdog('voipscript', 'Invalid PHP expression: @expr', array('@expr' => $expr), WATCHDOG_ERROR);
     }
     ob_end_clean();
   }
@@ -1220,28 +1227,29 @@ function _voipscript_expand_variables($str, $vars) {
 }
 
 function _voipscript_replace_variable($var_name, $vars, $eval) {
-  if(isset($vars[$var_name])) {
+  if (isset($vars[$var_name])) {
     $expanded = _voipscript_expand_variables($vars[$var_name], $vars);
-    if($eval) {
+    if ($eval) {
       // Special handling since $str is going to be evaluated ..
-      if(!is_numeric($expanded) || (substr($expanded . '', 0, 1)==='0'
-          && strpos($expanded . '', '.')===false)) {
+      if (!is_numeric($expanded) || (substr($expanded . '', 0, 1) === '0'
+          && strpos($expanded . '', '.') === false)) {
         $expanded = "'$expanded'";
       }
     }
     return $expanded;
-  } else {
+  }
+  else {
     // Variable does not exist in $vars array
-    if($eval) {
+    if ($eval) {
       return 'null';
     }
-// TODO: how to handle variables that contain strings with ', " or / ? Is there a need for a addslashes()?
+    // TODO: how to handle variables that contain strings with ', " or / ? Is there a need for a addslashes()?
 //  return "$var_name";
     return '';
   }
 }
 
 
-function _voipscript_get_element($index, $array){
+function _voipscript_get_element($index, $array) {
   return $array[$index];
 }

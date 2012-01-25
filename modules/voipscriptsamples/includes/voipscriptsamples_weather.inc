@@ -50,7 +50,7 @@ function _voipscriptsamples_get_weather_report() {
   $script->addLabel('process_options');
 
   // Go to user's selected option.
-  // * replay previous message 
+  // * replay previous message
   $script->addGotoIf('forecast', "^%input_digits == '*'");
 
   // #, start all over again
@@ -77,18 +77,18 @@ function _voipscriptsamples_get_weather_report() {
  */
 function _voipscriptsamples_get_forecast($zip) {
 
-watchdog('forecast', "zip: $zip");
+  watchdog('forecast', "zip: $zip");
 
   $forecast = NULL;
 
   $woeid = _voipscriptsamples_getWoeidFromZip($zip);
-  if(!$woeid) {
+  if (!$woeid) {
     // invalid zip code
   }
   else {
     $unit = 'f';
     $info = _voipscriptsamples_get_weather_info($woeid, $unit);
-    if(!$info) {
+    if (!$info) {
       // processing error
     }
     else {
@@ -110,11 +110,11 @@ watchdog('forecast', "zip: $zip");
  *  Note: The following function is based on http://www.phpclasses.org/package/2665-PHP-Retrieve-information-from-Yahoo-weather-RSS-feeds.html
  *
  * @param $woeid, the WOEID of the desired location
- * 
+ *
  * @param $unit, string with either 'c' for Celsius or 'f' for Fahrenheit
  */
 
-function _voipscriptsamples_get_weather_info($woeid, $unit='f') {
+function _voipscriptsamples_get_weather_info($woeid, $unit = 'f') {
   require_once('class.xml.parser.php');
 
   $yahoo_url = "http://weather.yahooapis.com/forecastrss?w=$woeid&u=$unit";
@@ -124,7 +124,7 @@ function _voipscriptsamples_get_weather_info($woeid, $unit='f') {
 
   $parser = new xmlParser();
   $parser->parse($yahoo_url);
-  $content=&$parser->output[0]['child'][0]['child'];
+  $content = &$parser->output[0]['child'][0]['child'];
   foreach ($content as $item) {
     switch ($item['name']) {
       case 'TITLE':
@@ -132,13 +132,14 @@ function _voipscriptsamples_get_weather_info($woeid, $unit='f') {
       case 'DESCRIPTION':
       case 'LANGUAGE':
       case 'LASTBUILDDATE':
-        $forecast[$item['name']]=$item['content'];
+        $forecast[$item['name']] = $item['content'];
         break;
       case 'YWEATHER:LOCATION':
       case 'YWEATHER:UNITS':
       case 'YWEATHER:ASTRONOMY':
-        foreach ($item['attrs'] as $attr=>$value)
-          $forecast[$attr]=$value;
+        foreach ($item['attrs'] as $attr => $value) {
+          $forecast[$attr] = $value;
+        }
         break;
       case 'IMAGE':
         break;
@@ -148,13 +149,13 @@ function _voipscriptsamples_get_weather_info($woeid, $unit='f') {
             case 'GEO:LAT':
             case 'GEO:LONG':
             case 'PUBDATE':
-              $forecast[$detail['name']]=$detail['content'];
+              $forecast[$detail['name']] = $detail['content'];
               break;
             case 'YWEATHER:CONDITION':
-              $forecast['CURRENT']=$detail['attrs'];
+              $forecast['CURRENT'] = $detail['attrs'];
               break;
             case 'YWEATHER:FORECAST':
-              array_push($forecast,$detail['attrs']);
+              array_push($forecast, $detail['attrs']);
               break;
           }
         }
@@ -177,7 +178,7 @@ function _voipscriptsamples_getWoeidFromZip($zip) {
 
   $woeid = $woeidFromZip[$zip];
 
-  if(!$woeid) {
+  if (!$woeid) {
     $q = "select woeid from geo.places where text='$zip' limit 1";
     $ch = curl_init('http://query.yahooapis.com/v1/public/yql?format=json&q=' . urlencode($q));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -189,13 +190,13 @@ function _voipscriptsamples_getWoeidFromZip($zip) {
       try {
         $response = json_decode($response, true);
         $woeid = intval($response['query']['results']['place']['woeid']);
-        
+
         // store response in cache
         if ($woeid) {
           $woeidFromZip[$zip] = $woeid;
         }
       }
-      catch(Exception $ex) {
+      catch (Exception $ex) {
         $woeid = FALSE;
       }
     }
