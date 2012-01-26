@@ -54,7 +54,6 @@ function voipcall_schema() {
       'call_id' => array(
         'type' => 'text',
         'size' => 'small',
-        'default' => '',
       ),
       'caller_name' => array(
         'type' => 'varchar',
@@ -87,7 +86,6 @@ function voipcall_schema() {
       'error_message' => array(
         'type' => 'text',
         'size' => 'small',
-        'default' => '',
       ),
       'hangup_script' => array(
         'type' => 'varchar',
@@ -96,7 +94,6 @@ function voipcall_schema() {
       'script' => array(
         'type' => 'text',
         'size' => 'normal',
-        'default' => '',
       ),
       'source' => array(
         'type' => 'varchar',
@@ -172,7 +169,6 @@ function voipcall_schema() {
       'call_id' => array(
         'type' => 'text',
         'size' => 'small',
-        'default' => '',
       ),
       'origin_number' => array(
         'type' => 'varchar',
@@ -272,7 +268,6 @@ function voipcall_update_6100() {
         'call_id' => array(
           'type' => 'text',
           'size' => 'small',
-          'default' => '',
         ),
         'origin_number' => array(
           'type' => 'varchar',
