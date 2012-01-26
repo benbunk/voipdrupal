@@ -6,6 +6,6 @@ core = 7.x
 dependencies[] = voip
 dependencies[] = voipcall
 
-
-
-
+files[] = includes/twilio.php
+files[] = includes/twilio.php-original
+files[] = includes/voiptwilioserver.inc

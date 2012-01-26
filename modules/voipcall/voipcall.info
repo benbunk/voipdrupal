@@ -3,7 +3,7 @@ name = "VoIP Call"
 description = Core of VoIP Drupal.
 package = "VoIP Drupal"
 
-
-
-
-
+files[] = voipcall.inc
+files[] = voipscript.inc
+files[] = voipsession.inc
+files[] = voipvoice.inc
