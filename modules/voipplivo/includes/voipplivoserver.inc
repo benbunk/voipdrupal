@@ -7,15 +7,6 @@
  * Implementation of the VoipPlivoServer class
  */
 
-
-/**
- * File dependencies
- */
-
-foreach (array('plivo.php', 'voipplivo.inc') as $file) {
-  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
-}
-
 module_load_include('inc', 'voip', 'includes/voipserver');
 module_load_include('inc', 'voipcall', 'voipcall');
 

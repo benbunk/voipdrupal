@@ -3,10 +3,6 @@
  * @file Provides an easier way for developers to test Voip Drupal scripts
  */
 
-foreach (array('voipscriptui.features.inc') as $file) {
-  require_once DRUPAL_ROOT . '/' . $file;
-}
-
 /**
  * Implements hook_voipscript_get_script_names().
  */

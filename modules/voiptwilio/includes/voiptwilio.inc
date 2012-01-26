@@ -6,11 +6,6 @@
  * Implementation of Twilio-related functionality
  */
 
-foreach (array('twilio.php') as $file) {
-  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
-}
-
-
 /**
  * Internal functions
  */

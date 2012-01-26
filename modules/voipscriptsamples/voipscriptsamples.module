@@ -3,10 +3,6 @@
  * @file Provides sample scripts that demonstrate the capabilities of the VoIP Drupal platform
  */
 
-foreach (array('voipscriptsamples_weather.inc', 'voipscriptsamples_sms_group.inc') as $file) {
-  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file;
-}
-
 /**
  * Implements hook_voipscript_load_script().
  */

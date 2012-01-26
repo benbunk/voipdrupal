@@ -7,11 +7,6 @@
  * Implementation of core functionality associated with voip calls
  */
 
-foreach (array('voipscript.inc', 'voipcall.inc', 'voipsession.inc', 'voipvoice.inc') as $file) {
-  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
-}
-
-
 /**
  * Public functions
  */

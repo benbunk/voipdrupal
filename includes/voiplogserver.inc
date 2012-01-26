@@ -7,8 +7,6 @@
  * Implementation of the VoipLogServer class
  */
 
-require_once DRUPAL_ROOT . '/' . 'voipserver.inc';
-
 
 /**
  * Class definitions

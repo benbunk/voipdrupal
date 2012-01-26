@@ -6,11 +6,6 @@
  * Implementation of Plivo-related functionality
  */
 
-foreach (array('plivo.php') as $file) {
-  require_once DRUPAL_ROOT . '/' . dirname(__FILE__) . DIRECTORY_SEPARATOR . $file;
-}
-
-
 /**
  * Internal functions
  */
