@@ -16,7 +16,6 @@
  * @see https://www.tropo.com/docs/webapi/tropo.htm
  *
  */
-include DRUPAL_ROOT . '/' . 'tropo-rest.class.php';
 
 class Tropo extends BaseClass {
 
