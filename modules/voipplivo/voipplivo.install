@@ -15,6 +15,7 @@ function voipplivo_requirements($phase) {
   if ($phase == 'runtime' || $phase == 'install') {
     if (!extension_loaded("curl")) {
       $requirements['plivo_curl'] = array(
+        'value' => $t("PHP Curl not installed."),
         'severity' => REQUIREMENT_ERROR,
         'description' => $t("The VoIP Plivo module requires the PHP Curl extension to be installed."),
       );
@@ -28,14 +29,4 @@ function voipplivo_requirements($phase) {
   }
   $requirements['plivo_curl']['title'] = $t('VoIP Plivo');
   return $requirements;
-}
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function voipplivo_uninstall() {
-  /*We have to implement hook_uninstall or hook_requirements will not get called during install
-   http://www.silex-consulting.com/2011/05/04/views-3-dependency-in-drupal-6/
-   */
 }
