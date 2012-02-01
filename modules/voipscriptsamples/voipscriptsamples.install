@@ -9,10 +9,7 @@
  * Implements hook_uninstall().
  */
 function voipscriptsamples_uninstall() {
-  //Delete module variables
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {variable} WHERE name LIKE 'voip_sms_group_%%'") */
   db_delete('variable')
-  ->condition('name', 'voip_sms_group_%%', 'LIKE')
-  ->execute();
+    ->condition('name', 'voip_sms_group_%%', 'LIKE')
+    ->execute();
 }
