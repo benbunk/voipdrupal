@@ -378,13 +378,20 @@ function voipcall_call_log() {
     ),
     '',
   );
-  $sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}" . tablesort_sql($headers);
-  $limit = 50;
-  $result = pager_query($sql, $limit);
+  //$sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}" . tablesort_sql($headers);
+  //$limit = 50;
+  //$result = pager_query($sql, $limit);
+  $query = db_select('voipcall', 'vc')->extend('PagerDefault')->extend('TableSort');
+  $query
+    ->fields('vc', array('cid', 'start_time', 'uid', 'caller_name', 'caller_number', 'dest_name', 'dest_number'))
+    ->orderByHeader($headers)
+    ->limit(50);
+   $result = $query->execute();
 
+  $data = array();
   if ($result) {
     //your basic while loop to get the data
-    while ($tmp = db_fetch_array($result)) {
+    foreach($result as $tmp) {
       // TODO Convert "user_load" to "user_load_multiple" if "$tmp['uid']" is other than a uid.
       // To return a single user object, wrap "user_load_multiple" with "array_shift" or equivalent.
       // Example: array_shift(user_load_multiple(array(), $tmp['uid']))
@@ -401,7 +408,7 @@ function voipcall_call_log() {
       $data[] = $tmp;
     }
   }
-  $output .= theme('table', array('header' => $headers, 'rows' => $data));
+  $output = theme('table', array('header' => $headers, 'rows' => $data));
   $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
