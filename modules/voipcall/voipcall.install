@@ -6,26 +6,13 @@
  */
 
 /**
- * Implements hook_install().
- */
-function voipcall_install() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('voipcall')
-}
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_uninstall().
  */
 function voipcall_uninstall() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_uninstall_schema('voipcall')
   //Delete module variables
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {variable} WHERE name LIKE 'voipcall_%%'") */
   db_delete('variable')
-  ->condition('name', 'voipcall_%%', 'LIKE')
-  ->execute();
+    ->condition('name', 'voipcall_%%', 'LIKE')
+    ->execute();
 }
 
 /**
@@ -194,11 +181,9 @@ function voipcall_schema() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_update_N().
  */
 function voipcall_update_6100() {
-  $ret = array();
   //Add current_channel field
   db_add_field('voipcall', 'current_channel',
     array(
@@ -291,39 +276,28 @@ function voipcall_update_6100() {
     db_create_table('voipsession', $schema['voipsession']);
   }
 
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return t('VoIP Call Update 6100 ran successfully.') /* $ret */;
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_update_N().
  */
 function voipcall_update_6101() {
-  $ret = array();
   db_change_field('voipcall', 'inbound_text_script_name', 'text_handler', array(
     'type' => 'varchar',
     'length' => 255,
     'not null' => TRUE,
     'default' => '',
   ));
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+
+  return t('VoIP Call Update 6101 ran successfully.') /* $ret */;
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_update_N().
  */
 function voipcall_update_6102() {
-  $ret = array();
   db_drop_field('voipcall', 'text_handler');
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+
+  return t('VoIP Call Update 6102 ran successfully.') /* $ret */;
 }
