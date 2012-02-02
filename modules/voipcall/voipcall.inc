@@ -112,6 +112,22 @@ class VoipCall {
    * @return
    *   The VoipCall instance, or NULL in case of an invalid cid
    */
+
+  /**
+   *
+   * @todo Drupal 7 Update
+   *
+   * replace db_fetch_object() with foreach ()
+   *
+   * $call_data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $cid)));
+   *
+   * Should be replaced by
+   *
+   * foreach ($result as $record) {
+   *
+   *
+   **/
+
   public static function load($cid) {
     $call = NULL;
     $call_data =
@@ -133,6 +149,17 @@ class VoipCall {
    *
    * @return $cid or NULL depending on the result of the query
    */
+
+  /**
+   * @todo Drupal 7 update
+   *
+   * Reformat
+   * $cid = db_query("SELECT cid FROM {voipcall} WHERE call_id = :call_id", array(':call_id' => $call_id))->fetchField();
+   *
+   * to match drupal standard
+   *
+   */
+
   public static function getCidFromCallId($call_id) {
     // fetch the desired voipcall data
     $cid = db_query("SELECT cid FROM {voipcall} WHERE call_id = :call_id", array(':call_id' => $call_id))->fetchField();
@@ -174,7 +201,7 @@ class VoipCall {
    */
   public function delete() {
     $cid = $this->call_data->cid;
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
     /* db_query("DELETE FROM {voipcall} WHERE cid=%d", $cid) */
     $res = db_delete('voipcall')
   ->condition('cid', $cid)
@@ -578,8 +605,8 @@ class VoipCall {
 
     // if this is a new call data being created
     if (is_null($details->cid)) {
-      // TODO Why does this get called so many times when a call goes out?
-      // TODO Why doesn't this save new data every time a call blast goes out, e.g. unchecking blast sent ?
+      // @TODO Why does this get called so many times when a call goes out?
+      // @TODO Why doesn't this save new data every time a call blast goes out, e.g. unchecking blast sent ?
 
       $data = new stdClass();
       $update = NULL;

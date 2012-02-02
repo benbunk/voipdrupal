@@ -8,10 +8,18 @@
  */
 function voipscriptui_voipscript_get_script_names() {
   $script_names = array();
-  $result = db_query('SELECT n.title FROM {node} n WHERE n.type = :n.type and n.status = :n.status', array(':n.type' => "voipscriptui", ':n.status' => 1));
-  while ($node = db_fetch_object($result)) {
+
+  //Create the Sql query. This uses various parts of Drupal 7's new DBTNG database abstraction layer.
+  //$query = db_select('node', n.title FROM {node} n WHERE n.type = :n.type and n.status = :n.status', array(':n.type' => "voipscriptui", ':n.status' => 1));
+  $query = db_select('node', 'n')
+    ->join('title', 'n', ':n.type = voipscriptui :n.status = 1', array(':n.type' => "voipscriptui", ':n.status' => 1));
+  $result = $query->execute();
+
+  // @todo Drupal 7 update BWM THIS ISN'T WORKING YET. NEED TO MERGE $query into $result
+  foreach ($result as $node) {
     $script_names[] = $node->title;
   }
+
   return $script_names;
 }
 
@@ -51,7 +59,7 @@ function voipscriptui_node_validate($node, $form) {
     if ($node->nid) {
       $where = "AND nid!=" . $node->nid;
     }
-    // TODO Please convert this statement to the D7 database API syntax.
+    // @todo Drupal 7 Upgrade Please convert this statement to the D7 database API syntax.
     $exist = db_query("SELECT nid FROM {node} WHERE type='voipscriptui' AND title='%s' $where LIMIT 1", $node->title)->fetchField();
     if ($exist) {
       form_set_error('field_voipscriptui_code',
@@ -188,7 +196,7 @@ function voipscriptui_scripts_page() {
 
   // get voipscriptui scripts
   $res = db_query("SELECT nid, title FROM {node} WHERE type = :type", array(':type' => 'voipscriptui'));
-  while ($script_ui = db_fetch_array($res)) {
+  foreach ($res as $script_ui) {
     $row = array(
       'title' => $script_ui['title'],
       'code' => l('view', 'node/' . $script_ui['nid']),

@@ -74,7 +74,7 @@ function voipcall_permission() {
   return array(
     'administer voipcall setup' => array(
       'title' => t('administer voipcall setup'),
-      'description' => t('TODO Add a description for \'administer voipcall setup\''),
+      'description' => t('todo Add a description for \'administer voipcall setup\''),
     ),
   );
 }
@@ -180,7 +180,7 @@ function voipcall_admin_form($form, &$form_state) {
  */
 function voipcall_admin_form_validate($form, &$form_state) {
   $values = $form_state['values'];
-  // TODO: provide feedback directly on the affected fields...
+  // @todo: provide feedback directly on the affected fields...
   $script_name = $values['voipcall_inbound_call_script_name'];
   $script = VoipScript::loadScript($script_name);
   if (!$script) {
@@ -386,13 +386,13 @@ function voipcall_call_log() {
     ->fields('vc', array('cid', 'start_time', 'uid', 'caller_name', 'caller_number', 'dest_name', 'dest_number'))
     ->orderByHeader($headers)
     ->limit(50);
-   $result = $query->execute();
+  $result = $query->execute();
 
   $data = array();
   if ($result) {
     //your basic while loop to get the data
     foreach($result as $tmp) {
-      // TODO Convert "user_load" to "user_load_multiple" if "$tmp['uid']" is other than a uid.
+      // @todo Convert "user_load" to "user_load_multiple" if "$tmp['uid']" is other than a uid.
       // To return a single user object, wrap "user_load_multiple" with "array_shift" or equivalent.
       // Example: array_shift(user_load_multiple(array(), $tmp['uid']))
       $owner = user_load($tmp['uid']);
@@ -470,20 +470,37 @@ function voipcall_session_log() {
       'field' => 'delete',
     ),
   );
-  $sql = "SELECT * FROM {voipsession}" . tablesort_sql($headers);
-  $limit = 50;
-  $result = pager_query($sql, $limit);
+  
+  //$sql = "SELECT * FROM {voipsession}" . tablesort_sql($headers);
+  //$limit = 50;
+  //$result = pager_query($sql, $limit);
 
+  $query = db_select('voipsession', 'v')
+    ->extend('PagerDefault')      //Pager Extender
+    ->limit(50)          // 50 results per page
+    ->extend('TableSort')         // Sorting Extender
+    ->orderByHeader($headers)   // Field to sort on is picked from $header
+    ->fields('v', array(
+      'sid',
+      'call_id',
+      'origin_number',
+      'destination_number',
+      'expiration_time',
+      'expiring_at'
+    ));
+  $result = $query->execute();
+  
+  $output = '';
   if ($result) {
-    //your basic while loop to get the data
-    while ($tmp = db_fetch_array($result)) {
+    //your basic foreach loop to get the data
+    foreach ($result as $tmp) {
       $tmp['expiring_at'] = format_date($tmp['expiring_at'], 'short');
       $tmp['call_id'] = l($tmp['call_id'], 'voipcall/' . $tmp['call_id']);
       $tmp['delete'] = l('Delete', 'voipsession/delete/' . $tmp['sid']);
       $data[] = $tmp;
     }
   }
-  $output .= theme('table', array('header' => $headers, 'rows' => $data));
+  $output = theme('table', array('header' => $headers, 'rows' => $data));
   $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
@@ -493,7 +510,7 @@ function voipcall_session_log() {
  * @see http://drupal.org/node/1354
  */
 function voipcall_session_delete($sid) {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
+  // @todo Please review the conversion of this statement to the D7 database API syntax.
   /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid) */
   db_delete('voipsession')
   ->condition('sid', $sid)

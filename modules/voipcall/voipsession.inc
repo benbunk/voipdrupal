@@ -32,11 +32,22 @@ class VoipSession {
     return $session;
   }
 
+  /**
+   *   @todo Durpal 7 update
+   *
+   *   Replace
+   *   $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $origin_number, ':destination_number' => $destination_number)));
+   *   With something similar to
+   *   foreach ($result as $data) {}
+   *
+   *
+   *   */
+
   public static function getSessionByInboundNumber($origin_number, $destination_number) {
     $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $origin_number, ':destination_number' => $destination_number)));
     if ($session_data->expiring_at < REQUEST_TIME) {
       //Delete this session, its expired
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
       /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
       db_delete('voipsession')
   ->condition('sid', $session_data->sid)
@@ -51,11 +62,23 @@ class VoipSession {
     return FALSE;
   }
 
+
+  /**
+  *   @todo Durpal 7 update
+  *
+  *   Replace
+  *   $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $destination_number, ':destination_number' => $origin_number)));
+  *   With something similar to
+  *   foreach ($result as $data) {}
+  *
+  *
+  *   */
+
   public static function getSessionByOutboundNumber($origin_number, $destination_number) {
     $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $destination_number, ':destination_number' => $origin_number)));
     if ($session_data->expiring_at < REQUEST_TIME) {
       //Delete this session, its expired
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
       /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
       db_delete('voipsession')
   ->condition('sid', $session_data->sid)
@@ -80,10 +103,22 @@ class VoipSession {
         $search_number = $destination_number;
       }
 
+      /**
+      *   @todo Durpal 7 update
+      *
+      *   Replace
+      *   $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number || destination_number = :destination_number", array(':origin_number' => $search_number, ':destination_number' => $search_number)));
+      *   With something similar to
+      *   foreach ($result as $data) {}
+      *
+      *
+      *   */
+
+
       $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number || destination_number = :destination_number", array(':origin_number' => $search_number, ':destination_number' => $search_number)));
       if ($session_data->expiring_at < REQUEST_TIME) {
         //Delete this session, its expired
-        // TODO Please review the conversion of this statement to the D7 database API syntax.
+        // @todo Drupal 7 Update Please review the conversion of this statement to the D7 database API syntax.
         /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
         db_delete('voipsession')
   ->condition('sid', $session_data->sid)
@@ -109,11 +144,23 @@ class VoipSession {
    * @return
    *    Session instance or FALSE.
    */
+
+  /**
+  *   @todo Durpal 7 update
+  *
+  *   Replace
+  *   $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id = :call_id", array(':call_id' => $cid)));
+  *   With something similar to
+  *   foreach ($result as $data) {}
+  *
+  *
+  *   */
+
   public static function getSessionByCid($cid) {
     $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id = :call_id", array(':call_id' => $cid)));
     if ($session_data->expiring_at < REQUEST_TIME) {
       //Delete this session, its expired
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
       /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
       db_delete('voipsession')
   ->condition('sid', $session_data->sid)
@@ -140,11 +187,11 @@ class VoipSession {
 
     //Get call ids of deleted sessions
     $res = db_query("SELECT * FROM {voipsession} WHERE expiring_at < :expiring_at", array(':expiring_at' => $time));
-    while ($session = db_fetch_object($res)) {
+    foreach ($res as $session) {
       $deleted_call_ids[] = $session->call_id;
     }
     //Delete the sessions
-    // TODO Please review the conversion of this statement to the D7 database API syntax.
+    // @todo Druapl 7 update Please review the conversion of this statement to the D7 database API syntax.
     /* db_query("DELETE FROM {voipsession} WHERE expiring_at<'%s'", $time) */
     db_delete('voipsession')
   ->condition('expiring_at', $time, '<')
@@ -227,6 +274,19 @@ class VoipSession {
 
     }
     else {
+
+
+    	/**
+    	*   @todo Durpal 7 update
+    	*
+    	*   Replace
+    	*   $data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE sid = :sid", array(':sid' => $this->session_data->sid)));
+    	*   With something similar to
+    	*   foreach ($result as $data) {}
+    	*
+    	*
+    	*   */
+
       // load the data
       $data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE sid = :sid", array(':sid' => $this->session_data->sid)));
       $update = 'sid';
@@ -265,7 +325,7 @@ class VoipSession {
   public function destroy() {
     $sid = $this->session_data->sid;
     if ($sid) {
-      // TODO Please review the conversion of this statement to the D7 database API syntax.
+      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
       /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid) */
       db_delete('voipsession')
   ->condition('sid', $sid)

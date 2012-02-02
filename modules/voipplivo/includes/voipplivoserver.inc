@@ -141,14 +141,14 @@ class VoipPlivoServer extends VoipServer {
       'GatewayRetries' => $gateway_retries, # Retry String for Gateways separated by comma, on how many times each gateway should be retried
       'ExtraDialString' => $extra_dial_string,
       'AnswerUrl' => $call_handler_url,
-      //TODO: Whats the purpose of hangup and ringing URLs? Is it optional?
+      //@todo Whats the purpose of hangup and ringing URLs? Is it optional?
       //'HangupUrl' => "http://127.0.0.1:5000/hangup/",
       //'RingUrl' => "http://127.0.0.1:5000/ringing/"
     );
 
     // Handle answering machine options
     /* if($voipcall->getCheckMachine() == TRUE) {
-     // TODO: Is there IfMachine variable in Plivo?
+     // @todo  Is there IfMachine variable in Plivo?
      //$vars['IfMachine'] = 'Continue';
      }*/
 
@@ -181,7 +181,7 @@ class VoipPlivoServer extends VoipServer {
     else {
       $rc = TRUE;
       // get the new id and status associated with the call
-      //TODO: There is no responseXML
+      //@todo There is no responseXML
       /*$xml = $response->ResponseXml;
        $call_id = (string)$xml->Call->Sid;
        $plivo_call_status = (string)$xml->Call->Status;
@@ -349,7 +349,7 @@ class VoipPlivoServer extends VoipServer {
   /**
    * Private methods
    */
-  // TODO:  private static function _get_available_voices() {
+  // @todo private static function _get_available_voices() {
   static function _get_available_voices() {
     // Note: check http://festvox.org/voicedemos.html for demos of the different voices
     $voices = array();

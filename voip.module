@@ -49,8 +49,8 @@ function voip_dial($voipcall) {
  * @return boolean with TRUE in case of success or FALSE otherwise
  */
 function voip_text($text, $voipcall, $reply = FALSE) {
-  //TODO: Convert to text perm.
-//  make sure the user is allowed to make outbound calls
+  // @todo : Convert to text perm.
+  // make sure the user is allowed to make outbound calls
   $allowed = user_access('make outbound calls');
   if (!$allowed) {
     global $user;

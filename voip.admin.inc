@@ -63,7 +63,7 @@ function voip_admin_default_form_submit($form, &$form_state) {
  * @see http://drupal.org/node/1354
  */
 function theme_voip_admin_default_form($variables) {
-  $form = $variables['form'];
+  $form = $variables->form;
   $rows = array();
   foreach ($form as $name => $element) {
     if (isset($element['id']) && is_array($element['id'])) {

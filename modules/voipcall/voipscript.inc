@@ -72,7 +72,7 @@ class VoipScript {
   /**
    * Error code
    */
-  //TODO: do we really need this constant?
+  //@todo: do we really need this constant?
   const ERROR = 'processing_error';
 
   /**
@@ -1120,7 +1120,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addGetInput("^VoipPrompt::decode(%_menu_options)", 1, '', '%_timeout');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
   /**
-   TODO: ideally, the correct line should be as follows
+   @todo: ideally, the correct line should be as follows
    $script->addGotoIf('valid_option',
    "^strpos(' ' . '%_keys_allowed', '%input_digits')");
    however, since the eval function is not processing '0', '*', '#' correctly,
@@ -1243,7 +1243,7 @@ function _voipscript_replace_variable($var_name, $vars, $eval) {
     if ($eval) {
       return 'null';
     }
-    // TODO: how to handle variables that contain strings with ', " or / ? Is there a need for a addslashes()?
+    // @todo: how to handle variables that contain strings with ', " or / ? Is there a need for a addslashes()?
 //  return "$var_name";
     return '';
   }

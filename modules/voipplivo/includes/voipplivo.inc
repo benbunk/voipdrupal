@@ -43,7 +43,8 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
     $msg = '_voip_plivo_call_handler called with invalid AccountSid: @sid';
     $params = array('@sid' => $incoming_sid);
     watchdog('voipplivo', $msg, $params, WATCHDOG_WARNING);
-    return FALSE; // TODO: should we return an error response to the server?
+    // @todo should we return an error response to the server?
+    return FALSE;
   }
 
   //Removing text options:
@@ -170,7 +171,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
       // store plivo call id for all outbound calls
       $call_id = $_REQUEST['CallUUID'];
       $call->setCallId($call_id);
-      //TODO: Is there AnsweredBy in Plivo?
+      //@todo Is there AnsweredBy in Plivo?
       /* $answered_by = $_REQUEST['AnsweredBy'];
        if($answered_by) {
        $tmp = ($answered_by == 'human') ? VoipCall::ANSWERED_HUMAN
@@ -232,7 +233,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
    $call->SetCallStatus(VoipCall::IN_PROGRESS);
    }
    else{*/
-  //TODO: Check if Plivo statuses are same as Twilio?
+  //@todo Check if Plivo statuses are same as Twilio?
   watchdog('voipplivo', 'Check if Plivo statuses are same as Twilio ' . print_r($plivo_call_status, true));
   $call = voipplivo_update_call_status($call, $plivo_call_status);
   // }
@@ -278,7 +279,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
         // NOTE: in Plivo, conference calls are executed via the dial command
 //       and, therefore, should be processed in the same way
       case 'process_dial':
-        //TODO: Test request parameters
+        //@todo Test request parameters
         watchdog('voipplivo', "Dial response: " . print_r($_REQUEST, true));
         $call = _voipplivo_process_dial_response($call, $_REQUEST);
         break;
@@ -293,12 +294,12 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
       case 'process_record_mp3':
         $script = $call->getScript();
         $plivo_record_url = $_REQUEST['RecordFile'];
-        //TODO: is only local path supported?
+        //@todo is only local path supported?
         watchdog('voipplivo', "Record response: " . print_r($_REQUEST, true));
         //Transfer the file to local server
         $file = _voipplivo_transfer_file($plivo_record_url);
         $script->setVar('recording_path', file_create_url($file['filepath']));
-        //TODO: For now we set this to same recording_path because public url is not available in Plivo
+        //@todo For now we set this to same recording_path because public url is not available in Plivo
         $script->setVar('recording_public_url', file_create_url($file['filepath']));
         $script->setVar('recording_duration', $_REQUEST['RecordingDuration']);
         $script->setVar('recording_digits', $_REQUEST['Digits']);
@@ -479,7 +480,7 @@ function _voipplivo_script_handler($call) {
             $action = url($response_url, array('absolute' => TRUE));
             $method = 'POST';
 
-            // TODO: implement the other features such as multi-dial, url(for private scripts) and sendDigits?
+            // @todo implement the other features such as multi-dial, url(for private scripts) and sendDigits?
             $timeout = $script->evalString($cmd->getParam('timeout', 30));
             $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
             $hangup_on_star =  $hangup_on_star ? 'true' : 'false';
@@ -488,7 +489,7 @@ function _voipplivo_script_handler($call) {
             $caller_id = $script->evalString($cmd->getParam('caller_id', $caller_number));
             $response .= '<Dial action="' . $action
                             . '" method="' . $method
-                            //TODO: No timeout in Plivo dial.
+                            //@todo No timeout in Plivo dial.
                             //. '" timeout="' . $timeout
                             . '" hangupOnStar="' . $hangup_on_star
                             . '" timeLimit="' . $time_limit
@@ -534,7 +535,7 @@ function _voipplivo_script_handler($call) {
           $processing = FALSE;
           break;
         case 'VoipCmdGetVoiceInput':
-          //TODO: http://www.plivo.org/docs/restxml/voice-elements/getspeech/
+          //@todo http://www.plivo.org/docs/restxml/voice-elements/getspeech/
           $rc = TRUE;
           $processing = FALSE;
           break;
@@ -649,11 +650,11 @@ function _voipplivo_script_handler($call) {
           $room = $script->evalString($cmd->getParam('room'));
           $muted =  $script->evalString($cmd->getParam('muted', false));
           $muted =  $muted ? 'true' : 'false';
-          //TODO: Check about this param, doc is not consistent in Plivo
+          //@todo Check about this param, doc is not consistent in Plivo
           $beep =  'true'; // by default, announce new participants
           $start_on_enter =  'true';
           $end_on_exit =  'false';
-          //TODO: waitSound in Plivo must return a RESTXML with Play and/or Wait Elements only
+          //@todo waitSound in Plivo must return a RESTXML with Play and/or Wait Elements only
           $wait_url = '';
           $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
           $hangup_on_star =  $hangup_on_star ? 'true' : 'false';
@@ -708,13 +709,13 @@ function _voipplivo_script_handler($call) {
           $timeout = $script->evalString($cmd->getParam('timeout', 5));
           $end_key = $script->evalString($cmd->getParam('end_key', '#'));
           $max_length = $script->evalString($cmd->getParam('max_length', 3600));
-          // TODO: implement the "transcribe" feature?"
+          // @todo implement the "transcribe" feature?"
           $play_beep = $script->evalString($cmd->getParam('play_beep'));
           $play_beep = $play_beep ? 'true' : 'false';
           if ($prompt) {
             $response .= _voipplivo_generate_audio_response($script, $prompt);
           }
-          //TODO: Check what the Plivo returns in response? Documentation mentiones only support for saving file to local filesystem?
+          //@todo Check what the Plivo returns in response? Documentation mentiones only support for saving file to local filesystem?
           $response .= '<Record action="' . $action
                             . '" method="' . $method
                             . '" timeout="' . $timeout
@@ -798,7 +799,7 @@ function _voipplivo_script_handler($call) {
             voipscript_send_sms_framework($to, $text);
           }
           else if (strtolower($call->getCurrentChannel()) == 'offline_text') {
-            //TODO: Check about this in using with Plivo? Does it make sense?
+            //@todo Check about this in using with Plivo? Does it make sense?
             //Use voip_text()
             $reply = TRUE;
             $call->setCurrentChannel('text');
@@ -1005,7 +1006,7 @@ function _voipplivo_process_dial_response($call, $request) {
  case 'sending':
  $text_status = VoipCall::TEXT_SENDING;
  break;
- case 'received': // TODO: this is status is not documented in plivo.com. is this a plivo bug?
+ case 'received': // @todo this is status is not documented in plivo.com. is this a plivo bug?
  case 'sent':
  $text_status = VoipCall::TEXT_SENT;
  break;
