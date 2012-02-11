@@ -406,7 +406,8 @@ function voipcall_call_log() {
       $data[] = $tmp;
     }
   }
-  $output = theme('table', array('header' => $headers, 'rows' => $data));
+  $empty = 'No calls in the log.';
+  $output = theme('table', array('header' => $headers, 'rows' => $data, 'empty' => $empty));
   $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
