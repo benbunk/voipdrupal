@@ -1,7 +1,5 @@
 <?php
 
-// $Id$
-
 /**
  * @file
  * Implementation of core functionality associated with voip calls
@@ -491,6 +489,7 @@ function voipcall_session_log() {
   $result = $query->execute();
   
   $output = '';
+  $data = array();
   if ($result) {
     //your basic foreach loop to get the data
     foreach ($result as $tmp) {
@@ -500,7 +499,8 @@ function voipcall_session_log() {
       $data[] = $tmp;
     }
   }
-  $output = theme('table', array('header' => $headers, 'rows' => $data));
+  $empty = 'No Sessions in the log.';
+  $output = theme('table', array('header' => $headers, 'rows' => $data, 'empty' => $empty));
   $output .= theme('pager', array('tags' => NULL, 'element' => 0));
   return $output;
 }
