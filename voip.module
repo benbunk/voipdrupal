@@ -242,5 +242,43 @@ function voip_default_server() {
   return $server;
 }
 
+/**
+ * Implements hook_voipserver_info().
+ *
+ * Note - Moved here so it can be discovered by @see module_implements(). An alternative would have been
+ *   @see hook_hook_info() but that would require changing file names which is probably a good idea but not
+ *   on my todo list right now.
+ */
+function voip_voipserver_info() {
+  $server = new VoipLogServer();
+  return $server;
+}
+
+/**
+ * Implements hook_getvoices().
+ *
+ * Note - Moved here so it can be discovered by @see module_implements(). An alternative would have been
+ *   @see hook_hook_info() but that would require changing file names which is probably a good idea but not
+ *   on my todo list right now.
+ */
+function voip_getvoices($language, $gender, $is_local) {
+
+  if (variable_get('voip_default_server', 'log') != 'log') {
+    //Return if this VoIP Server is not set as default
+    return array();
+  }
+  if ($is_local === TRUE) {
+    //This module doesn't declare local voices
+    return array();
+  }
 
 
+  $voices = array();
+  $voices['voip_log'] = array(
+    'language' => 'en',
+    'voice' => 'man',
+    'description' => t('Log - VoIP Drupal Log voice'),
+  );
+
+  return $voices;
+}

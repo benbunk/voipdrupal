@@ -2,31 +2,51 @@
 // $Id$
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implments hook_form().
  */
 function voip_admin_default_form($form, &$form_state) {
+  $header = array(
+    'name' => array('data' => t('Name')),
+    'operations' => array('data' => t('Operations')),
+  );
+
   $server_array = VoipServer::getServers();
 
   // sort the array by server name
   usort($server_array, "_server_cmp");
 
+  $options = array();
   foreach ($server_array as $server) {
     $id = $server->getId();
     $name = $server->getName();
-    $options[$id] = '';
-    $form[$name]['id'] = array('#value' => $id);
+
     if (function_exists($server->getConfigForm())) {
-      $form[$name]['configure'] = array('#value' => l(t('configure'), 'admin/voip/servers/' . $id));
+      $operations = l(t('Configure'), 'admin/voip/servers/' . $id);
     }
     else {
-      $form[$name]['configure'] = array('#value' => t('No configuration options'));
+      $operations = t('No configuration options');
     }
+
+    $options[$id] = array(
+      '#id' => $id,
+      '#value' => $id,
+      'data' => array(
+        '#title' => t($name),
+        '#id' => $id,
+      ),
+      'name' => t($name),
+      'operations' => $operations,
+    );
   }
+
   $form['default'] = array(
-    '#type' => 'radios',
+    '#type' => 'tableselect',
+    '#header' => $header,
     '#options' => $options,
     '#default_value' => variable_get('voip_default_server', 'log'),
+    //'#js_select' => FALSE,
+    '#multiple' => FALSE,
+    '#empty' => t('No Servers Installed.'),
   );
 
   $form['submit'] = array(
@@ -47,8 +67,7 @@ function _server_cmp($s1, $s2) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_form_submit().
  */
 function voip_admin_default_form_submit($form, &$form_state) {
   // Process form submission to set the default voip server
@@ -59,35 +78,7 @@ function voip_admin_default_form_submit($form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
- */
-function theme_voip_admin_default_form($variables) {
-  $form = $variables->form;
-  $rows = array();
-  foreach ($form as $name => $element) {
-    if (isset($element['id']) && is_array($element['id'])) {
-      $rows[] = array(
-        drupal_render($form['default'][$element['id']['#value']]),
-        check_plain($name),
-        drupal_render($element['configure']),
-      );
-      unset($form[$name]);
-    }
-  }
-  $header = array(t('Default'), t('Name'), array(
-      'data' => t('Operations'),
-      'colspan' => 1,
-    ));
-  $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= drupal_render_children($form);
-
-  return $output;
-}
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * implements hook_form().
  */
 function voip_admin_server_form($form, &$form_state, $server_id) {
   $server = VoipServer::getServer($server_id);
@@ -113,6 +104,8 @@ function voip_admin_server_form($form, &$form_state, $server_id) {
 }
 
 /**
+ * Implements hook_form_validate().
+ *
  * Validation for voip server configuration. If the server defines a validation
  * function it uses that.
  */
@@ -126,8 +119,7 @@ function voip_admin_server_form_validate($form, &$form_state) {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_form_submit().
  */
 function voip_admin_server_form_submit($form, &$form_state) {
   $server = $form_state['values']['server'];
