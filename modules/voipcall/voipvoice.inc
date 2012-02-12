@@ -60,7 +60,7 @@ class VoipVoice {
    *   VoipVoice instance of default VoIP Voice.
    */
   public static function getDefaultVoice() {
-    $voice_id = variable_get('voipcall_voice_id', '');
+    $voice_id = variable_get('voipcall_voice_id', 'log');
     $voipvoice_voice = self::getVoice($voice_id);
     return $voipvoice_voice;
   }
@@ -76,13 +76,13 @@ class VoipVoice {
    */
   public static function getVoice($voice_id = NULL) {
     if ($voice_id == 'man') {
-      $voice_id = variable_get('voipcall_man_voice_id', '');
+      $voice_id = variable_get('voipcall_man_voice_id', 'log');
     }
     else if ($voice_id == 'woman') {
-      $voice_id = variable_get('voipcall_woman_voice_id', '');
+      $voice_id = variable_get('voipcall_woman_voice_id', 'log');
     }
     else if (empty($voice_id)) {
-      $voice_id = variable_get('voipcall_voice_id', '');
+      $voice_id = variable_get('voipcall_voice_id', 'log');
     }
 
     $voipvoices = self::getVoices();

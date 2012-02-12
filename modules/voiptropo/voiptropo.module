@@ -6,11 +6,12 @@
  * Adds support for sending and receiving VoIP requests to and from Tropo.
  */
 
-module_load_include('inc', 'voiptropo', 'includes/voiptropo');
+/*module_load_include('inc', 'voiptropo', 'includes/voiptropo');
 module_load_include('inc', 'voiptropo', 'includes/voiptroposerver');
 module_load_include('inc', 'voiptropo', 'includes/voiptroposcript');
 //Include Tropo API
 module_load_include('php', 'voiptropo', 'tropo_webapi/tropo.class');
+*/
 
 //-----------------------------------------------------------------------------
 // Public functions
@@ -25,36 +26,35 @@ function voiptropo_voipserver_info() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_form().
  */
 function voiptropo_admin_form($configuration) {
   $form['voiptropo_account_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Tropo Username'),
     '#description' => t("Your Tropo username."),
-    '#default_value' => ($configuration['voiptropo_account_username'] ? $configuration['voiptropo_account_username'] : ''),
+    '#default_value' => (isset($configuration['voiptropo_account_username']) ? $configuration['voiptropo_account_username'] : ''),
   );
 
   $form['voiptropo_account_password'] = array(
     '#type' => 'password',
     '#title' => t('Tropo Password'),
     '#description' => t("Your Tropo password."),
-    '#default_value' => ($configuration['voiptropo_account_password'] ? $configuration['voiptropo_account_password'] : ''),
+    '#default_value' => (isset($configuration['voiptropo_account_password']) ? $configuration['voiptropo_account_password'] : ''),
   );
 
   $form['voiptropo_voice_token'] = array(
     '#type' => 'textfield',
     '#title' => t('Voice Outbound Token'),
     '#description' => t("The Voice Outbound Token provided in your Tropo application settings."),
-    '#default_value' => ($configuration['voiptropo_voice_token'] ? $configuration['voiptropo_voice_token'] : ''),
+    '#default_value' => (isset($configuration['voiptropo_voice_token']) ? $configuration['voiptropo_voice_token'] : ''),
   );
 
   $form['voiptropo_sms_token'] = array(
     '#type' => 'textfield',
     '#title' => t('Messaging Outbound Token'),
     '#description' => t("The Messaging Outbound Token provided in your Tropo application settings."),
-    '#default_value' => ($configuration['voiptropo_sms_token'] ? $configuration['voiptropo_sms_token'] : ''),
+    '#default_value' => (isset($configuration['voiptropo_sms_token']) ? $configuration['voiptropo_sms_token'] : ''),
   );
 
   $form['voipcall_voice_id'] = array(

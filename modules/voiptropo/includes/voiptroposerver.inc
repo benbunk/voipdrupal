@@ -12,9 +12,9 @@
  * File dependencies
  */
 
-module_load_include('inc', 'voip', 'includes/voipserver');
+/*module_load_include('inc', 'voip', 'includes/voipserver');
 module_load_include('inc', 'voipcall', 'voipcall');
-
+*/
 
 /**
  * Class definitions
