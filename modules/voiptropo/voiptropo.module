@@ -6,12 +6,12 @@
  * Adds support for sending and receiving VoIP requests to and from Tropo.
  */
 
-/*module_load_include('inc', 'voiptropo', 'includes/voiptropo');
-module_load_include('inc', 'voiptropo', 'includes/voiptroposerver');
-module_load_include('inc', 'voiptropo', 'includes/voiptroposcript');
+module_load_include('inc', 'voiptropo', 'includes/voiptropo');
+//module_load_include('inc', 'voiptropo', 'includes/voiptroposerver');
+//module_load_include('inc', 'voiptropo', 'includes/voiptroposcript');
 //Include Tropo API
-module_load_include('php', 'voiptropo', 'tropo_webapi/tropo.class');
-*/
+//module_load_include('php', 'voiptropo', 'tropo_webapi/tropo.class');
+
 
 //-----------------------------------------------------------------------------
 // Public functions

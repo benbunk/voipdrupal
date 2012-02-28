@@ -130,14 +130,16 @@ class VoipCall {
 
   public static function load($cid) {
     $call = NULL;
-    $call_data =
-      db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $cid)));
-    if ($call_data) {
-      // unserialize the call script
-      $script = unserialize($call_data->script);
-      $call_data->script = $script;
+    $result = db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $cid));
+    foreach($result as $call_data) {
+      if ($call_data) {
+        // unserialize the call script
+        $script = unserialize($call_data->script);
+        $call_data->script = $script;
 
-      $call = new VoipCall($call_data);
+        $call = new VoipCall($call_data);
+        break;
+      }
     }
     return $call;
   }
@@ -284,7 +286,7 @@ class VoipCall {
   }
 
   public function getDestNumber() {
-    return $this->call_data->dest_number;
+    return isset($this->call_data->dest_number) ? $this->call_data->dest_number : "";
   }
 
   public function setDestNumber($number) {
@@ -300,7 +302,7 @@ class VoipCall {
   }
 
   public function getCallerNumber() {
-    return $this->call_data->caller_number;
+    return isset($this->call_data->caller_number) ? $this->call_data->caller_number : "";
   }
 
   public function setCallerNumber($number) {
@@ -308,7 +310,7 @@ class VoipCall {
   }
 
   public function getCallerName() {
-    return $this->call_data->caller_name;
+    return isset($this->call_data->caller_name) ? $this->call_data->caller_name : "";
   }
 
   public function setCallerName($name) {
@@ -604,7 +606,7 @@ class VoipCall {
     }
 
     // if this is a new call data being created
-    if (is_null($details->cid)) {
+    if (!isset($details->cid) || is_null($details->cid)) {
       // @TODO Why does this get called so many times when a call goes out?
       // @TODO Why doesn't this save new data every time a call blast goes out, e.g. unchecking blast sent ?
 
@@ -696,14 +698,17 @@ class VoipCall {
     }
     else {
       // load the data
-      $data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $details->cid)));
+      $result = db_query("SELECT * FROM {voipcall} WHERE cid = :cid", array(':cid' => $details->cid));
+      $data = NULL;
+      foreach($result as $info) {
+        $data = $info;
+        break;
+      }
       $update = 'cid';
       $data->changed = REQUEST_TIME;
     }
 
     // update data fields
-    $new_dest_number = $details->dest_number;
-
     if (isset($details->uid)) {
       $data->uid = $details->uid;
     }
@@ -715,22 +720,22 @@ class VoipCall {
       $data->call_id = $new_call_id;
     }
 
-    $new_dest_number = $details->dest_number;
+    $new_dest_number = isset($details->dest_number) ? $details->dest_number : NULL;
     if (isset($new_dest_number)) {
       $data->dest_number = $new_dest_number;
     }
 
-    $new_dest_name = $details->dest_name;
+    $new_dest_name = isset($details->dest_name) ? $details->dest_name : NULL;
     if (isset($new_dest_name)) {
       $data->dest_name = $new_dest_name;
     }
 
-    $new_caller_number = $details->caller_number;
+    $new_caller_number = isset($details->caller_number) ? $details->caller_number : NULL;
     if (isset($new_caller_number)) {
       $data->caller_number = $new_caller_number;
     }
 
-    $new_caller_name = $details->caller_name;
+    $new_caller_name = isset($details->caller_name) ? $details->caller_name : NULL;
     if (isset($new_caller_name)) {
       $data->caller_name = $new_caller_name;
     }
@@ -745,7 +750,7 @@ class VoipCall {
       $data->answered_by = $new_answered_by;
     }
 
-    $new_text_status = $details->text_status;
+    $new_text_status = isset($details->text_status) ? $details->text_status : NULL;
     if (isset($new_text_status)) {
       $data->text_status = $new_text_status;
     }
@@ -766,22 +771,22 @@ class VoipCall {
     }
     $data->start_time = $new_start_time;
 
-    $new_end_time = $details->end_time;
+    $new_end_time = isset($details->end_time) ? $details->end_time : NULL;
     if (isset($new_end_time)) {
       $data->end_time = $new_end_time;
     }
 
-    $new_duration = $details->duration;
+    $new_duration = isset($details->duration) ? $details->duration : NULL;
     if (isset($new_duration)) {
       $data->duration = $new_duration;
     }
 
-    $new_max_session_duration = $details->max_session_duration;
+    $new_max_session_duration = isset($details->max_session_duration) ? $details->max_session_duration : NULL;
     if (isset($new_max_session_duration)) {
       $data->max_session_duration = $new_max_session_duration;
     }
 
-    $new_error_message = $details->error_message;
+    $new_error_message = isset($details->error_message) ? $details->error_message : NULL;
     if (isset($new_error_message)) {
       $data->error_message = $new_error_message;
     }
@@ -806,22 +811,22 @@ class VoipCall {
       $data->current_network = $current_network;
     }
 
-    $new_script = $details->script;
+    $new_script = isset($details->script) ? $details->script : NULL;
     if (isset($new_script)) {
       $data->script =  serialize($new_script);
     }
 
-    $new_hangup_script_name = $details->hangup_script;
+    $new_hangup_script_name = isset($details->hangup_script) ? $details->hangup_script : NULL;
     if (isset($new_hangup_script_name)) {
       $data->hangup_script =  $new_hangup_script_name;
     }
 
-    $new_hangup_reason = $details->hangup_reason;
+    $new_hangup_reason = isset($details->hangup_reason) ? $details->hangup_reason : NULL;
     if (isset($new_hangup_reason)) {
       $data->hangup_reason =  $new_hangup_reason;
     }
 
-    $new_check = $details->check_machine;
+    $new_check = isset($details->check_machine) ? $details->check_machine : NULL;
     if (isset($new_check)) {
       $data->check_machine =  $new_check;
     }
@@ -834,7 +839,12 @@ class VoipCall {
     }
 
     // save the data
-    drupal_write_record('voipcall', $data, $update);
+    if(is_null($update)) {
+      drupal_write_record('voipcall', $data);
+    }
+    else {
+      drupal_write_record('voipcall', $data, $update);
+    }
 
     return $data;
   }

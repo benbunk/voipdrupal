@@ -44,19 +44,23 @@ class VoipSession {
    *   */
 
   public static function getSessionByInboundNumber($origin_number, $destination_number) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $origin_number, ':destination_number' => $destination_number)));
-    if ($session_data->expiring_at < REQUEST_TIME) {
-      //Delete this session, its expired
-      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
-      db_delete('voipsession')
-  ->condition('sid', $session_data->sid)
-  ->execute();
-      return FALSE;
-    }
-    if ($session_data) {
-      $session = new self($session_data);
-      return $session;
+    $result = db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $origin_number, ':destination_number' => $destination_number));
+
+    foreach($result as $session_data) {
+      if ($session_data->expiring_at < REQUEST_TIME) {
+        //Delete this session, its expired
+        // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+        db_delete('voipsession')
+          ->condition('sid', $session_data->sid)
+          ->execute();
+        return FALSE;
+      }
+
+      if ($session_data) {
+        $session = new self($session_data);
+        return $session;
+      }
     }
 
     return FALSE;
@@ -75,19 +79,23 @@ class VoipSession {
   *   */
 
   public static function getSessionByOutboundNumber($origin_number, $destination_number) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $destination_number, ':destination_number' => $origin_number)));
-    if ($session_data->expiring_at < REQUEST_TIME) {
-      //Delete this session, its expired
-      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
-      db_delete('voipsession')
-  ->condition('sid', $session_data->sid)
-  ->execute();
-      return FALSE;
-    }
-    if ($session_data) {
-      $session = new self($session_data);
-      return $session;
+    $result = db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number AND destination_number = :destination_number", array(':origin_number' => $destination_number, ':destination_number' => $origin_number));
+
+    foreach($result as $session_data) {
+      if ($session_data->expiring_at < REQUEST_TIME) {
+        //Delete this session, its expired
+        // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+        db_delete('voipsession')
+          ->condition('sid', $session_data->sid)
+          ->execute();
+        return FALSE;
+      }
+
+      if ($session_data) {
+        $session = new self($session_data);
+        return $session;
+      }
     }
 
     return FALSE;
@@ -115,20 +123,24 @@ class VoipSession {
       *   */
 
 
-      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number || destination_number = :destination_number", array(':origin_number' => $search_number, ':destination_number' => $search_number)));
-      if ($session_data->expiring_at < REQUEST_TIME) {
-        //Delete this session, its expired
-        // @todo Drupal 7 Update Please review the conversion of this statement to the D7 database API syntax.
-        /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
-        db_delete('voipsession')
-  ->condition('sid', $session_data->sid)
-  ->execute();
-        $session_data = NULL;
-      }
+      $result = db_query("SELECT * FROM {voipsession} WHERE origin_number = :origin_number || destination_number = :destination_number", array(':origin_number' => $search_number, ':destination_number' => $search_number));
 
-      if ($session_data) {
-        $session = new self($session_data);
-        return $session;
+      foreach($result as $session_data) {
+        if ($session_data->expiring_at < REQUEST_TIME) {
+          //Delete this session, its expired
+          // @todo Drupal 7 Update Please review the conversion of this statement to the D7 database API syntax.
+          /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+          db_delete('voipsession')
+            ->condition('sid', $session_data->sid)
+            ->execute();
+          $session_data = NULL;
+          break;
+        }
+
+        if ($session_data) {
+          $session = new self($session_data);
+          return $session;
+        }
       }
     }
 
@@ -157,19 +169,23 @@ class VoipSession {
   *   */
 
   public static function getSessionByCid($cid) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id = :call_id", array(':call_id' => $cid)));
-    if ($session_data->expiring_at < REQUEST_TIME) {
-      //Delete this session, its expired
-      // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
-      /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
-      db_delete('voipsession')
-  ->condition('sid', $session_data->sid)
-  ->execute();
-      return false;
-    }
-    if ($session_data) {
-      $session = new self($session_data);
-      return $session;
+    $result = db_query("SELECT * FROM {voipsession} WHERE call_id = :call_id", array(':call_id' => $cid));
+
+    foreach($result as $session_data) {
+      if ($session_data->expiring_at < REQUEST_TIME) {
+        //Delete this session, its expired
+        // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
+        /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid) */
+        db_delete('voipsession')
+          ->condition('sid', $session_data->sid)
+          ->execute();
+        return FALSE;
+      }
+
+      if ($session_data) {
+        $session = new self($session_data);
+        return $session;
+      }
     }
 
     return FALSE;
@@ -194,8 +210,8 @@ class VoipSession {
     // @todo Druapl 7 update Please review the conversion of this statement to the D7 database API syntax.
     /* db_query("DELETE FROM {voipsession} WHERE expiring_at<'%s'", $time) */
     db_delete('voipsession')
-  ->condition('expiring_at', $time, '<')
-  ->execute();
+      ->condition('expiring_at', $time, '<')
+      ->execute();
     return $deleted_call_ids;
   }
 
@@ -245,8 +261,7 @@ class VoipSession {
    *   The updated VoipSession instance, or NULL
    */
   public function save() {
-
-    if (is_null($this->session_data->sid)) {
+    if (!isset($this->session_data->sid) || is_null($this->session_data->sid)) {
       $data = new stdClass();
       $update = NULL;
       // initialize the 'Call Id' field
@@ -263,8 +278,8 @@ class VoipSession {
       }
       // initialize the 'Expiration time' field
       if (!isset($this->session_data->expiration_time)) {
-        $data->expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
-        $expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
+        $data->expiration_time = _voipsession_default_expiration_time(isset($this->session_data->call_id) ? $this->session_data->call_id : "");
+        $expiration_time = _voipsession_default_expiration_time(isset($this->session_data->call_id) ? $this->session_data->call_id : "");
       }
       else {
         $expiration_time = $this->session_data->expiration_time;
@@ -288,11 +303,16 @@ class VoipSession {
     	*   */
 
       // load the data
-      $data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE sid = :sid", array(':sid' => $this->session_data->sid)));
+      $result = db_query("SELECT * FROM {voipsession} WHERE sid = :sid", array(':sid' => $this->session_data->sid));
+      $data = NULL;
+      foreach($result as $info) {
+        $data = $info;
+        break;
+      }
       $update = 'sid';
     }
 
-    $call_id = $this->session_data->call_id;
+    $call_id = isset($this->session_data->call_id) ? $this->session_data->call_id : NULL;
     if (isset($call_id)) {
       $data->call_id = $call_id;
     }
@@ -307,14 +327,19 @@ class VoipSession {
       $data->destination_number = $destination_number;
     }
 
-    $expiration_time = $this->session_data->expiration_time;
+    $expiration_time = isset($this->session_data->expiration_time) ? $this->session_data->expiration_time : NULL;
     if (isset($expiration_time)) {
       $data->expiration_time = $expiration_time;
     }
 
     $data->expiring_at =  $this->session_data->expiring_at;
     // save the data
-    drupal_write_record('voipsession', $data, $update);
+    if(is_null($update)) {
+      drupal_write_record('voipsession', $data);
+    }
+    else {
+      drupal_write_record('voipsession', $data, $update);
+    }
 
     $this->session_data = $data;
   }
@@ -328,8 +353,8 @@ class VoipSession {
       // @todo Drupal 7 update Please review the conversion of this statement to the D7 database API syntax.
       /* db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid) */
       db_delete('voipsession')
-  ->condition('sid', $sid)
-  ->execute();
+        ->condition('sid', $sid)
+        ->execute();
     }
     watchdog('voipsession', "Destroying session $sid");
     $this->session_data = NULL;
@@ -342,5 +367,5 @@ function _voipsession_default_expiration_time($cid) {
     $session_duration = $call->getMaxSessionDuration();
   }
 
-  return $session_duration ? $session_duration : variable_get('voipcall_default_session_time', 60);
+  return isset($session_duration) ? $session_duration : variable_get('voipcall_default_session_time', 60);
 }

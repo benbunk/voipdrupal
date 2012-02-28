@@ -181,7 +181,7 @@ class VoipScript {
    *       script variable 'input'
    */
   function getVar($name) {
-    return $this->variables[$name];
+    return isset($this->variables[$name]) ? $this->variables[$name] : "";
   }
 
   /**
