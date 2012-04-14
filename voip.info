@@ -6,6 +6,7 @@ core = 7.x
 
 dependencies[] = voipcall
 
+files[] = includes/voip_error.inc
 files[] = includes/voiplogserver.inc
 files[] = includes/voipserver.inc
 

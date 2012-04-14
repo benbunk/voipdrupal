@@ -6,7 +6,7 @@
  * Enables communication between Drupal and VoIP servers.
  */
 
-require_once(__DIR__ . '/includes/voip_error.inc');
+require_once(dirname(__FILE__) . '/includes/voip_error.inc');
 
 /**
  * Make a phone call

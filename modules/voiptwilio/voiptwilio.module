@@ -85,6 +85,8 @@ function voiptwilio_admin_form_validate($form, &$form_state) {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
+
+require_once(dirname(__FILE__) . '/includes/voiptwilio.inc');
 function voiptwilio_menu() {
   $items = array();
 
